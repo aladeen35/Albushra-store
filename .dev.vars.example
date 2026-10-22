@@ -1,0 +1,3 @@
+ADMIN_TOKEN=change-me-to-a-long-random-string
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=

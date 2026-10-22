@@ -1,0 +1,44 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "albushra-store",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Storefront static files (UI will be added once the design is ready).
+  // API routes are handled by the Worker first; everything else is served from ./public.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/media/*"]
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "albushra-db",
+      // Replace with the id printed by: npx wrangler d1 create albushra-db
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "r2_buckets": [
+    // Product images and Bankak payment receipts.
+    { "binding": "MEDIA", "bucket_name": "albushra-media" }
+  ],
+
+  // Hourly: sync order status from suppliers and expire unpaid orders.
+  "triggers": { "crons": ["0 * * * *"] },
+
+  "vars": {
+    "STORE_NAME": "البشرى",
+    "PUBLIC_URL": "https://albushra.example.com"
+  }
+  // Secrets (set with `npx wrangler secret put <NAME>`):
+  //   ADMIN_TOKEN            - password for the admin API
+  //   STRIPE_SECRET_KEY      - card payments for customers outside Sudan
+  //   STRIPE_WEBHOOK_SECRET  - Stripe webhook signing secret
+  //   SUPPLIER_<CODE>_API_KEY - API key for each supplier (e.g. SUPPLIER_MAIN_API_KEY)
+}

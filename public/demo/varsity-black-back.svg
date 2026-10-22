@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 640">
+<defs>
+<linearGradient id="cyl" x1="0" x2="1">
+<stop offset="0" stop-color="#000" stop-opacity=".30"/>
+<stop offset=".16" stop-color="#000" stop-opacity=".06"/>
+<stop offset=".42" stop-color="#fff" stop-opacity=".10"/>
+<stop offset=".6" stop-color="#fff" stop-opacity=".04"/>
+<stop offset=".86" stop-color="#000" stop-opacity=".08"/>
+<stop offset="1" stop-color="#000" stop-opacity=".34"/>
+</linearGradient>
+<linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#fff" stop-opacity=".12"/>
+<stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+<stop offset="1" stop-color="#000" stop-opacity=".14"/>
+</linearGradient>
+<filter id="noise" x="0" y="0" width="100%" height="100%">
+<feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/>
+<feColorMatrix type="saturate" values="0"/>
+<feComponentTransfer><feFuncA type="linear" slope=".07"/></feComponentTransfer>
+</filter>
+<filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+<clipPath id="clip"><path d="M118 70 L120 170 L118 392 L282 392 L280 170 L282 70 L240 50 L160 50 Z"/><path d="M160 50 L118 70 Q90 90 84 150 L68 340 L106 348 L122 170 Z"/><path d="M240 50 L282 70 Q310 90 316 150 L332 340 L294 348 L278 170 Z"/></clipPath>
+</defs>
+<path d="M160 50 L118 70 Q90 90 84 150 L68 340 L106 348 L122 170 Z" fill="#f1efe9"/><path d="M240 50 L282 70 Q310 90 316 150 L332 340 L294 348 L278 170 Z" fill="#f1efe9"/>
+<path d="M118 70 L120 170 L118 392 L282 392 L280 170 L282 70 L240 50 L160 50 Z" fill="#1b1b1d"/>
+<g ><rect x="118" y="368" width="164" height="30" fill="#1b1b1d"/>
+<rect x="118" y="377" width="164" height="4.2" fill="#c4202b"/>
+<rect x="118" y="384.8" width="164" height="4.2" fill="#f1efe9"/></g>
+<g transform="rotate(5 87 347)"><rect x="66" y="334" width="42" height="26" fill="#1b1b1d"/>
+<rect x="66" y="341.8" width="42" height="3.6400000000000006" fill="#c4202b"/>
+<rect x="66" y="348.56" width="42" height="3.6400000000000006" fill="#f1efe9"/></g><g transform="rotate(-5 313 347)"><rect x="292" y="334" width="42" height="26" fill="#1b1b1d"/>
+<rect x="292" y="341.8" width="42" height="3.6400000000000006" fill="#c4202b"/>
+<rect x="292" y="348.56" width="42" height="3.6400000000000006" fill="#f1efe9"/></g>
+<path d="M160 50 Q200 60 240 50 L240 62 Q200 72 160 62 Z" fill="#c4202b"/>
+<g font-family="Georgia, serif" font-weight="900" fill="#f1efe9" text-anchor="middle" stroke="#c4202b" stroke-width="2">
+<text x="200" y="170" font-size="38" textLength="140" lengthAdjust="spacingAndGlyphs">BUSHRA</text><text x="200" y="270" font-size="100" textLength="110" lengthAdjust="spacingAndGlyphs">93</text></g>
+<path d="M134 190 Q142 270 134 350" fill="none" stroke="#000" stroke-opacity="0.14" stroke-width="7" stroke-linecap="round" filter="url(#soft)"/><path d="M266 190 Q258 270 266 350" fill="none" stroke="#000" stroke-opacity="0.1" stroke-width="7" stroke-linecap="round" filter="url(#soft)"/><path d="M98 160 Q92 240 88 320" fill="none" stroke="#000" stroke-opacity="0.14" stroke-width="7" stroke-linecap="round" filter="url(#soft)"/><path d="M302 160 Q308 240 312 320" fill="none" stroke="#000" stroke-opacity="0.14" stroke-width="7" stroke-linecap="round" filter="url(#soft)"/>
+<g clip-path="url(#clip)">
+<rect width="400" height="640" fill="url(#cyl)"/>
+<rect width="400" height="640" fill="url(#top)"/>
+<rect width="400" height="640" filter="url(#noise)"/>
+</g>
+</svg>

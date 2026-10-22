@@ -2,7 +2,7 @@ import { Hono, type Context } from 'hono';
 import { z } from 'zod';
 import type { AppEnv } from '../env';
 import { timingSafeEqual } from '../lib/crypto';
-import { addEvent, autoForward, createOrder, getOrderByNumber, getOrderItems, OrderError, type OrderItemRow, type OrderRow } from '../lib/orders';
+import { addEvent, createOrder, getOrderByNumber, getOrderItems, OrderError, type OrderItemRow, type OrderRow } from '../lib/orders';
 import { getSettings } from '../lib/settings';
 import { createCheckoutSession } from '../payments/stripe';
 
@@ -36,7 +36,7 @@ const orderSchema = z.object({
     .array(z.object({ variantId: z.number().int().positive(), quantity: z.number().int().min(1).max(20) }))
     .min(1)
     .max(30),
-  paymentMethod: z.enum(['cod', 'bankak', 'card']),
+  paymentMethod: z.enum(['bankak', 'card']),
   notes: z.string().trim().max(500).nullish(),
 });
 
@@ -99,7 +99,6 @@ orders.post('/', async (c) => {
     const items = await getOrderItems(c.env.DB, order.id);
     const body: Record<string, unknown> = { order: customerView(order, items), accessToken: order.access_token };
 
-    if (order.payment_method === 'cod') c.executionCtx.waitUntil(autoForward(c.env, order.id));
     if (order.payment_method === 'bankak') body.bankak = await bankakInstructions(c.env.DB, order);
     if (order.payment_method === 'card') {
       try {

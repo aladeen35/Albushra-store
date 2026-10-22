@@ -5,12 +5,12 @@ import { accessToken, orderNumber } from './ids';
 import { currencyForRegion, PAYMENT_METHODS, regionForCountry, shippingFee, unitPrice, type Currency, type Region } from './pricing';
 import { getSettings } from './settings';
 
-export type PaymentMethod = 'cod' | 'bankak' | 'card';
+export type PaymentMethod = 'bankak' | 'card';
 export type PaymentStatus = 'unpaid' | 'pending_verification' | 'paid' | 'rejected' | 'refunded';
 export type OrderStatus =
   | 'pending_payment' // bankak/card: waiting for the customer to pay
   | 'awaiting_verification' // bankak: receipt uploaded, admin must check it
-  | 'confirmed' // ready to be sent to the supplier (COD, or payment received)
+  | 'confirmed' // payment received, ready to be sent to the supplier
   | 'sent_to_supplier'
   | 'shipped'
   | 'delivered'
@@ -155,7 +155,6 @@ export async function createOrder(db: D1Database, input: NewOrderInput): Promise
 
   const subtotal = lines.reduce((sum, l) => sum + l.price * l.quantity, 0);
   const shipping = shippingFee(region, settings);
-  const isCod = input.paymentMethod === 'cod';
   const number = orderNumber();
   const c = input.customer;
 
@@ -163,7 +162,7 @@ export async function createOrder(db: D1Database, input: NewOrderInput): Promise
     .prepare(
       `INSERT INTO orders (number, access_token, region, currency, payment_method, payment_status, status,
          subtotal, shipping, total, customer_name, customer_phone, customer_email, country, city, address, notes)
-       VALUES (?, ?, ?, ?, ?, 'unpaid', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+       VALUES (?, ?, ?, ?, ?, 'unpaid', 'pending_payment', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
     )
     .bind(
       number,
@@ -171,7 +170,6 @@ export async function createOrder(db: D1Database, input: NewOrderInput): Promise
       region,
       currencyForRegion(region),
       input.paymentMethod,
-      isCod ? 'confirmed' : 'pending_payment',
       subtotal,
       shipping,
       subtotal + shipping,

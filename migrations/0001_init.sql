@@ -55,7 +55,7 @@ CREATE TABLE orders (
   access_token    TEXT NOT NULL,               -- lets the customer track the order / upload a receipt
   region          TEXT NOT NULL,               -- 'sd' (inside Sudan) | 'intl'
   currency        TEXT NOT NULL,               -- 'SDG' | 'USD'
-  payment_method  TEXT NOT NULL,               -- 'cod' | 'bankak' | 'card'
+  payment_method  TEXT NOT NULL,               -- 'bankak' | 'card'
   payment_status  TEXT NOT NULL,               -- 'unpaid' | 'pending_verification' | 'paid' | 'rejected' | 'refunded'
   status          TEXT NOT NULL,               -- see src/lib/orders.ts
   subtotal        INTEGER NOT NULL,

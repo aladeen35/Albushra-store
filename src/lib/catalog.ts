@@ -13,6 +13,7 @@ export interface ProductRow {
   active: number;
   created_at: string;
   updated_at: string;
+  category_slug?: string | null;
 }
 
 export interface VariantRow {
@@ -27,6 +28,7 @@ export interface VariantRow {
   supplier_variant_ref: string | null;
   stock: number | null;
   active: number;
+  images: string | null;
 }
 
 /** Shape sent to shoppers: prices in the shopper's currency, no cost/supplier data. */
@@ -39,6 +41,8 @@ export function publicProduct(product: ProductRow, variants: VariantRow[], regio
     name: product.name,
     description: product.description,
     categoryId: product.category_id,
+    category: product.category_slug ?? null,
+    // images[0] is the front of the garment, images[1] the back.
     images: JSON.parse(product.images) as string[],
     currency: currencyForRegion(region),
     minPrice: prices.length ? Math.min(...prices) : null,
@@ -49,6 +53,8 @@ export function publicProduct(product: ProductRow, variants: VariantRow[], regio
       color: v.color,
       price: prices[n]!,
       inStock: v.stock == null || v.stock > 0,
+      // Color-specific images; when empty the product images apply.
+      images: v.images ? (JSON.parse(v.images) as string[]) : [],
     })),
   };
 }

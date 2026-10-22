@@ -83,10 +83,6 @@ admin.post('/orders/:number/status', async (c) => {
     return c.json({ error: 'invalid_transition', from: order.status, allowed: ADMIN_TRANSITIONS[order.status] }, 409);
   }
   await setOrderStatus(c.env.DB, order, parsed.data.status, parsed.data.note ?? 'admin');
-  // Cash on delivery is collected when the order is delivered.
-  if (parsed.data.status === 'delivered' && order.payment_method === 'cod' && order.payment_status !== 'paid') {
-    await c.env.DB.prepare("UPDATE orders SET payment_status = 'paid' WHERE id = ?").bind(order.id).run();
-  }
   return c.json({ ok: true });
 });
 
@@ -172,6 +168,7 @@ const variantSchema = z.object({
   supplierVariantRef: z.string().max(200).nullish(),
   stock: z.number().int().nonnegative().nullish(),
   active: z.boolean().optional(),
+  images: z.array(z.string().url().or(z.string().startsWith('/'))).max(10).nullish(),
 });
 
 const productSchema = z.object({
@@ -181,24 +178,28 @@ const productSchema = z.object({
   categoryId: z.number().int().positive().nullish(),
   supplierId: z.number().int().positive().nullish(),
   supplierProductRef: z.string().max(200).nullish(),
-  images: z.array(z.string().url().or(z.string().startsWith('/media/'))).max(20).optional(),
+  images: z.array(z.string().url().or(z.string().startsWith('/'))).max(20).optional(),
   active: z.boolean().optional(),
 });
 
 function bindVariant(db: D1Database, productId: number, v: z.infer<typeof variantSchema>) {
   return db
     .prepare(
-      `INSERT INTO variants (product_id, sku, size, color, price_usd, price_sdg, cost_usd, supplier_variant_ref, stock, active)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+      `INSERT INTO variants (product_id, sku, size, color, price_usd, price_sdg, cost_usd, supplier_variant_ref, stock, active, images)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
     )
-    .bind(productId, v.sku, v.size ?? null, v.color ?? null, v.priceUsd, v.priceSdg ?? null, v.costUsd ?? null, v.supplierVariantRef ?? null, v.stock ?? null, v.active === false ? 0 : 1);
+    .bind(productId, v.sku, v.size ?? null, v.color ?? null, v.priceUsd, v.priceSdg ?? null, v.costUsd ?? null, v.supplierVariantRef ?? null, v.stock ?? null, v.active === false ? 0 : 1, v.images?.length ? JSON.stringify(v.images) : null);
 }
 
 async function productWithVariants(db: D1Database, id: number) {
   const product = await db.prepare('SELECT * FROM products WHERE id = ?').bind(id).first<ProductRow>();
   if (!product) return null;
   const { results } = await db.prepare('SELECT * FROM variants WHERE product_id = ? ORDER BY id').bind(id).all<VariantRow>();
-  return { ...product, images: JSON.parse(product.images) as string[], variants: results };
+  return {
+    ...product,
+    images: JSON.parse(product.images) as string[],
+    variants: results.map((v) => ({ ...v, images: v.images ? (JSON.parse(v.images) as string[]) : [] })),
+  };
 }
 
 admin.get('/products', async (c) => {
@@ -272,10 +273,10 @@ admin.put('/variants/:id', async (c) => {
   if (!parsed.success) return c.json(badRequest(parsed.error.issues), 400);
   const v = parsed.data;
   const variant = await c.env.DB.prepare(
-    `UPDATE variants SET sku = ?, size = ?, color = ?, price_usd = ?, price_sdg = ?, cost_usd = ?, supplier_variant_ref = ?, stock = ?, active = ?
+    `UPDATE variants SET sku = ?, size = ?, color = ?, price_usd = ?, price_sdg = ?, cost_usd = ?, supplier_variant_ref = ?, stock = ?, active = ?, images = ?
      WHERE id = ? RETURNING *`,
   )
-    .bind(v.sku, v.size ?? null, v.color ?? null, v.priceUsd, v.priceSdg ?? null, v.costUsd ?? null, v.supplierVariantRef ?? null, v.stock ?? null, v.active === false ? 0 : 1, Number(c.req.param('id')))
+    .bind(v.sku, v.size ?? null, v.color ?? null, v.priceUsd, v.priceSdg ?? null, v.costUsd ?? null, v.supplierVariantRef ?? null, v.stock ?? null, v.active === false ? 0 : 1, v.images?.length ? JSON.stringify(v.images) : null, Number(c.req.param('id')))
     .first();
   return variant ? c.json({ variant }) : c.json({ error: 'not_found' }, 404);
 });

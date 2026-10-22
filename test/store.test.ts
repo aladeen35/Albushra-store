@@ -90,16 +90,26 @@ describe('catalog', () => {
   });
 });
 
+describe('cart lookup', () => {
+  it('returns current prices for variant ids', async () => {
+    const product = await createProduct(null);
+    const ids = product.variants.map((v) => v.id).join(',');
+    const data = (await (await call(`/api/variants?ids=${ids}&region=sd`)).json()) as any;
+    expect(data.currency).toBe('SDG');
+    expect(data.variants.map((v: any) => v.price).sort()).toEqual([50000, 60000]);
+  });
+});
+
 describe('orders', () => {
-  it('cash on delivery in Sudan: totals computed on the server, order confirmed', async () => {
+  it('Sudan order: totals computed on the server, waits for Bankak payment', async () => {
     const product = await createProduct(null);
     const { res, data } = await placeOrder({
       customer: sdCustomer,
       items: [{ variantId: product.variants[0]!.id, quantity: 2 }],
-      paymentMethod: 'cod',
+      paymentMethod: 'bankak',
     });
     expect(res.status).toBe(201);
-    expect(data.order).toMatchObject({ status: 'confirmed', currency: 'SDG', subtotal: 100000, shipping: 5000, total: 105000 });
+    expect(data.order).toMatchObject({ status: 'pending_payment', currency: 'SDG', subtotal: 100000, shipping: 5000, total: 105000 });
 
     const view = await call(`/api/orders/${data.order.number}?token=${data.accessToken}`);
     expect(view.status).toBe(200);
@@ -109,7 +119,8 @@ describe('orders', () => {
   it('rejects payment methods that do not match the country', async () => {
     const product = await createProduct(null);
     const items = [{ variantId: product.variants[0]!.id, quantity: 1 }];
-    expect((await placeOrder({ customer: intlCustomer, items, paymentMethod: 'cod' })).res.status).toBe(400);
+    // Cash on delivery is no longer offered anywhere.
+    expect((await placeOrder({ customer: sdCustomer, items, paymentMethod: 'cod' })).res.status).toBe(400);
     expect((await placeOrder({ customer: intlCustomer, items, paymentMethod: 'bankak' })).res.status).toBe(400);
     // Card is disabled until Stripe keys are configured.
     expect((await placeOrder({ customer: sdCustomer, items, paymentMethod: 'card' })).res.status).toBe(400);
@@ -118,8 +129,8 @@ describe('orders', () => {
   it('tracks stock and returns it when an order is cancelled', async () => {
     const product = await createProduct(null, 3);
     const variantId = product.variants[0]!.id;
-    const { data } = await placeOrder({ customer: sdCustomer, items: [{ variantId, quantity: 2 }], paymentMethod: 'cod' });
-    const tooMany = await placeOrder({ customer: sdCustomer, items: [{ variantId, quantity: 2 }], paymentMethod: 'cod' });
+    const { data } = await placeOrder({ customer: sdCustomer, items: [{ variantId, quantity: 2 }], paymentMethod: 'bankak' });
+    const tooMany = await placeOrder({ customer: sdCustomer, items: [{ variantId, quantity: 2 }], paymentMethod: 'bankak' });
     expect(tooMany.res.status).toBe(409);
 
     const cancel = await adminPost(`/api/admin/orders/${data.order.number}/status`, { status: 'cancelled' });

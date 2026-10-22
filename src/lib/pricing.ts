@@ -28,7 +28,7 @@ export function shippingFee(region: Region, settings: Pick<StoreSettings, 'shipp
   return region === 'sd' ? settings.shipping_sd_sdg : settings.shipping_intl_usd;
 }
 
-export const PAYMENT_METHODS: Record<Region, readonly ('cod' | 'bankak' | 'card')[]> = {
-  sd: ['cod', 'bankak'],
+export const PAYMENT_METHODS: Record<Region, readonly ('bankak' | 'card')[]> = {
+  sd: ['bankak'],
   intl: ['card'],
 };

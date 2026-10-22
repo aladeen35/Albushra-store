@@ -298,8 +298,13 @@ export async function isCutout(url) {
   return hasTransparency(ctx.getImageData(0, 0, w, h).data, w, h);
 }
 
-/** Loads a photo and returns a cropped, background-free canvas. */
-export async function cutout(url, tolerance, options) {
+/**
+ * Loads a photo and returns a cropped, background-free canvas.
+ * options.mannequin: also remove a plain white mannequin (colour-based).
+ * options.keep: async (canvas) => Uint8Array mask (1 = keep), e.g. clothes from a human-parsing model,
+ *               used to drop a model's face, hair, arms and legs.
+ */
+export async function cutout(url, tolerance, options = {}) {
   const img = await loadImage(url);
   const scale = Math.min(1, MAX_TEX / Math.max(img.naturalWidth, img.naturalHeight));
   const w = Math.round(img.naturalWidth * scale);
@@ -308,10 +313,12 @@ export async function cutout(url, tolerance, options) {
   const ctx = c.getContext('2d', { willReadFrequently: true });
   ctx.drawImage(img, 0, 0, w, h);
   const imageData = ctx.getImageData(0, 0, w, h); // throws on cross-origin images without CORS
-  if (!hasTransparency(imageData.data, w, h)) {
-    removeBackground(imageData, tolerance, options);
-    ctx.putImageData(imageData, 0, 0);
+  const keep = options.keep ? await options.keep(c) : null;
+  if (!hasTransparency(imageData.data, w, h)) removeBackground(imageData, tolerance, options);
+  if (keep) {
+    for (let p = 0; p < w * h; p++) if (!keep[p]) imageData.data[p * 4 + 3] = 0;
   }
+  ctx.putImageData(imageData, 0, 0);
   return cropToContent(c);
 }
 

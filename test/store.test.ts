@@ -284,3 +284,23 @@ describe('AI background removal', () => {
     expect((await adminPost('/api/admin/media/remove-background', { url: 'https://evil.test/x.jpg' })).status).toBe(400);
   });
 });
+
+describe('clothes-only mask (human parsing)', () => {
+  it('keeps clothing labels, drops body parts, scales and grows the mask', async () => {
+    const { combineMasks } = await import('../public/admin/human-parsing.js');
+    // 4×4 model output: top half "Upper-clothes", bottom-left "Face", bottom-right "Pants".
+    const mk = (fn: (x: number, y: number) => boolean) => ({ width: 4, height: 4, data: Uint8ClampedArray.from({ length: 16 }, (_, i) => (fn(i % 4, Math.floor(i / 4)) ? 255 : 0)) });
+    const segments = [
+      { label: 'Upper-clothes', mask: mk((x, y) => y < 2) },
+      { label: 'Face', mask: mk((x, y) => y >= 2 && x < 2) },
+      { label: 'Pants', mask: mk((x, y) => y >= 2 && x >= 2) },
+    ];
+    const keep = combineMasks(segments, 8, 8, 0);
+    const at = (x: number, y: number) => keep[y * 8 + x];
+    expect(at(0, 0)).toBe(1); // clothing
+    expect(at(1, 6)).toBe(0); // face removed
+    expect(at(6, 6)).toBe(1); // pants kept
+    const grown = combineMasks(segments, 8, 8, 1);
+    expect(grown[5 * 8 + 3]).toBe(1); // face pixel next to pants is kept after growing by 1
+  });
+});

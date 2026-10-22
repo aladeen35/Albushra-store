@@ -1,6 +1,7 @@
 // Store admin: orders (Bankak receipts), products with per-color images, categories and settings.
 import { esc, formatPrice } from '/js/api.js';
 import { cutout, isCutout } from '/js/garment-image.js';
+import { clothesMask } from '/admin/human-parsing.js';
 import { icons } from '/js/icons.js';
 import { logo, openPanel, toast } from '/js/ui.js';
 
@@ -209,7 +210,8 @@ async function processPhoto(file) {
       <div class="bg-compare"><figure><img src="${src}" alt=""><figcaption>الصورة الأصلية</figcaption></figure>
         <figure class="checker" data-result><div class="spinner"></div><figcaption>بعد إزالة الخلفية</figcaption></figure></div>
       <label class="field"><span>حساسية الإزالة: <b data-tol-val>26</b></span><input type="range" min="6" max="70" value="26" data-tol></label>
-      <label class="check"><input type="checkbox" data-mannequin> إزالة المانيكان (الرأس واليدين) — للملابس الملونة أو الداكنة فقط</label>
+      <label class="check"><input type="checkbox" data-mannequin> الملابس فقط: إزالة الموديل أو المانيكان (الوجه، الشعر، اليدين، الرجلين)</label>
+      <p class="hint" data-ai-note hidden></p>
       <p class="notice err" data-err hidden></p>
       <div class="row-actions"><button class="btn primary" data-use>${icons.check} استخدام النتيجة</button>
         <button class="btn dark" data-ai>إزالة بالذكاء الاصطناعي (أدق للملابس البيضاء)</button>
@@ -221,7 +223,34 @@ async function processPhoto(file) {
     const render = async () => {
       const tol = Number(dlg.querySelector('[data-tol]').value);
       dlg.querySelector('[data-tol-val]').textContent = tol;
-      result = await cutout(src, tol, { mannequin: dlg.querySelector('[data-mannequin]').checked });
+      const onlyClothes = dlg.querySelector('[data-mannequin]').checked;
+      const note = dlg.querySelector('[data-ai-note]');
+      let options = {};
+      if (onlyClothes) {
+        // AI human parsing keeps only garments; if the model can't load, fall back to removing a white mannequin by colour.
+        note.hidden = false;
+        note.textContent = 'جاري تحميل نموذج الذكاء الاصطناعي (مرة واحدة فقط، حوالي 27 ميجابايت)…';
+        let mask = null;
+        try {
+          const probe = await cutout(src, tol, {
+            keep: async (canvas) => (mask = await clothesMask(canvas, (p) => (note.textContent = `جاري تحميل النموذج… ${Math.round(p * 100)}%`))),
+          });
+          note.textContent = 'تم تحديد الملابس بالذكاء الاصطناعي وإزالة ما سواها.';
+          result = probe;
+        } catch (err) {
+          console.warn('human parsing unavailable', err);
+          note.textContent = 'تعذّر تحميل نموذج الذكاء الاصطناعي، فاستُخدمت الطريقة البسيطة (تزيل المانيكان الأبيض فقط).';
+          options = { mannequin: true };
+        }
+        if (mask) {
+          box.querySelector('canvas, .spinner')?.remove();
+          box.prepend(result);
+          return;
+        }
+      } else {
+        note.hidden = true;
+      }
+      result = await cutout(src, tol, options);
       box.querySelector('canvas, .spinner')?.remove();
       box.prepend(result);
     };

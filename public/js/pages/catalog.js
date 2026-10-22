@@ -1,5 +1,5 @@
 import { api, colorGroups, colorSwatch, currentRegion, esc, formatPrice, getCategories } from '../api.js';
-import { Rack, garmentMarkup } from '../rack.js';
+import { createRack, garmentMarkup } from '../rack.js';
 import { navigate } from '../ui.js';
 import { categoryCircles } from './home.js';
 
@@ -34,7 +34,7 @@ export async function products(main, { slug, query }) {
     </section>
     <section class="section" style="padding-top:36px"><div class="container"><div class="product-grid" data-grid></div></div></section>`;
 
-  const rack = new Rack(main.querySelector('[data-rack]'), { onOpen: (p) => navigate(`/p/${encodeURIComponent(p.slug)}`), autoplay: false });
+  const rack = await createRack(main.querySelector('[data-rack]'), { onOpen: (p) => navigate(`/p/${encodeURIComponent(p.slug)}`), autoplay: false });
   const load = async () => {
     const region = await currentRegion();
     const params = new URLSearchParams({ region, limit: '60' });

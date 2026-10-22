@@ -29,6 +29,9 @@
     { "binding": "MEDIA", "bucket_name": "albushra-media" }
   ],
 
+  // Workers AI: background removal for product photos (Bria RMBG 2.0, ~$0.018 per image).
+  "ai": { "binding": "AI" },
+
   // Hourly: sync order status from suppliers and expire unpaid orders.
   "triggers": { "crons": ["0 * * * *"] },
 

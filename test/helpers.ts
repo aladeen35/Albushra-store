@@ -77,7 +77,7 @@ export function createR2(): R2Bucket & { objects: Map<string, { body: ArrayBuffe
     async get(key: string) {
       const o = objects.get(key);
       if (!o) return null;
-      return { body: new Blob([o.body]).stream(), httpMetadata: { contentType: o.contentType }, httpEtag: '"x"' };
+      return { body: new Blob([o.body]).stream(), arrayBuffer: async () => o.body, httpMetadata: { contentType: o.contentType }, httpEtag: '"x"' };
     },
   } as never;
 }

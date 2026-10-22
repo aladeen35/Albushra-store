@@ -252,3 +252,35 @@ describe('card payments (Stripe)', () => {
     expect(view.order).toMatchObject({ paymentStatus: 'paid', status: 'confirmed' });
   });
 });
+
+describe('AI background removal', () => {
+  async function uploadPhoto() {
+    const form = new FormData();
+    form.set('file', new File([new Uint8Array([0xff, 0xd8, 0xff])], 'p.jpg', { type: 'image/jpeg' }));
+    const res = await call('/api/admin/media', { method: 'POST', headers: { authorization: adminHeaders.authorization }, body: form });
+    return ((await res.json()) as { url: string }).url;
+  }
+
+  it('is reported as unavailable without the AI binding', async () => {
+    const url = await uploadPhoto();
+    expect((await adminPost('/api/admin/media/remove-background', { url })).status).toBe(503);
+  });
+
+  it('stores the cut-out returned by the model', async () => {
+    const run = vi.fn(async (_model: string, input: { image: string }) => {
+      expect(input.image.startsWith('data:image/jpeg;base64,')).toBe(true);
+      return { image: `data:image/png;base64,${btoa('PNGDATA')}` };
+    });
+    env.AI = { run } as never;
+    const url = await uploadPhoto();
+    const res = await adminPost('/api/admin/media/remove-background', { url });
+    expect(res.status).toBe(201);
+    const out = ((await res.json()) as { url: string }).url;
+    expect(run).toHaveBeenCalledWith('bria/remove-background', expect.anything());
+    const stored = env.MEDIA.objects.get(out.slice('/media/'.length))!;
+    expect(stored.contentType).toBe('image/png');
+    expect(new TextDecoder().decode(stored.body)).toBe('PNGDATA');
+    // Only our own uploads can be processed.
+    expect((await adminPost('/api/admin/media/remove-background', { url: 'https://evil.test/x.jpg' })).status).toBe(400);
+  });
+});

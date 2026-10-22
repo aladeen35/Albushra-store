@@ -248,3 +248,22 @@ export class Rack {
     window.removeEventListener('resize', this.onResize);
   }
 }
+
+/**
+ * Picks the WebGL rack (real 3D cloth) when the device supports it, else this CSS rack.
+ * If garment photos can't be processed (e.g. a supplier image without CORS), it falls back too.
+ */
+export async function createRack(root, options) {
+  const { Rack3D, webglAvailable } = await import('./rack3d.js').catch(() => ({}));
+  if (!Rack3D || !webglAvailable()) return new Rack(root, options);
+  let impl;
+  impl = new Rack3D(root, {
+    ...options,
+    onFail(products) {
+      impl.destroy();
+      impl = new Rack(root, options);
+      impl.setProducts(products);
+    },
+  });
+  return { setProducts: (p) => impl.setProducts(p), destroy: () => impl.destroy() };
+}

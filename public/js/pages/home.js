@@ -1,6 +1,6 @@
 import { api, currentRegion, esc, getCategories } from '../api.js';
 import { icons } from '../icons.js';
-import { Rack } from '../rack.js';
+import { createRack } from '../rack.js';
 import { marquee, navigate } from '../ui.js';
 
 export const FEATURES = [
@@ -48,7 +48,7 @@ export default async function home(main) {
     </div></section>
     <section class="section" style="padding-top:0"><div class="container">${featuresMarkup()}</div></section>`;
 
-  const rack = new Rack(main.querySelector('[data-rack]'), { onOpen: (p) => navigate(`/p/${encodeURIComponent(p.slug)}`) });
+  const rack = await createRack(main.querySelector('[data-rack]'), { onOpen: (p) => navigate(`/p/${encodeURIComponent(p.slug)}`) });
   const load = async (cat) => {
     const r = await currentRegion();
     const data = await api(`/products?limit=14&region=${r}${cat ? `&category=${encodeURIComponent(cat)}` : ''}`).catch(() => ({ products: [] }));

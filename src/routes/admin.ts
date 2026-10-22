@@ -294,6 +294,56 @@ admin.post('/media', async (c) => {
   return c.json({ url: `/media/${key}` }, 201);
 });
 
+/**
+ * AI background removal (Bria RMBG 2.0 on Workers AI) for an uploaded product photo.
+ * Handles white garments on white backgrounds, where simple colour-based removal struggles.
+ */
+admin.post('/media/remove-background', async (c) => {
+  const ai = c.env.AI;
+  if (!ai) return c.json({ error: 'ai_not_configured', message: 'إزالة الخلفية بالذكاء الاصطناعي غير مفعّلة' }, 503);
+  const parsed = z.object({ url: z.string().regex(/^\/media\/products\/[\w-]+\.(jpg|png|webp|avif)$/) }).safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json(badRequest(parsed.error.issues), 400);
+  const obj = await c.env.MEDIA.get(parsed.data.url.slice('/media/'.length));
+  if (!obj) return c.json({ error: 'not_found' }, 404);
+  const type = obj.httpMetadata?.contentType ?? 'image/png';
+  if (type !== 'image/jpeg' && type !== 'image/png') return c.json({ error: 'invalid_file_type', message: 'استخدم صورة JPG أو PNG' }, 400);
+
+  let result: { image?: string };
+  try {
+    result = (await ai.run('bria/remove-background', { image: `data:${type};base64,${toBase64(await obj.arrayBuffer())}` })) as { image?: string };
+  } catch (err) {
+    console.error('remove-background', err);
+    return c.json({ error: 'ai_unavailable', message: 'خدمة إزالة الخلفية بالذكاء الاصطناعي غير متاحة الآن' }, 503);
+  }
+  if (!result?.image) return c.json({ error: 'ai_failed', message: 'تعذّرت إزالة الخلفية' }, 502);
+  let png: ArrayBuffer;
+  if (result.image.startsWith('http')) {
+    // The model returns a temporary URL; keep our own copy.
+    const res = await fetch(result.image);
+    if (!res.ok) return c.json({ error: 'ai_failed', message: 'تعذّر تحميل الصورة الناتجة' }, 502);
+    png = await res.arrayBuffer();
+  } else {
+    png = fromBase64(result.image.replace(/^data:[^,]+,/, ''));
+  }
+  const key = `products/${crypto.randomUUID()}.png`;
+  await c.env.MEDIA.put(key, png, { httpMetadata: { contentType: 'image/png' } });
+  return c.json({ url: `/media/${key}` }, 201);
+});
+
+function toBase64(buf: ArrayBuffer): string {
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+function fromBase64(b64: string): ArrayBuffer {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes.buffer;
+}
+
 // ---------- Suppliers ----------
 
 const supplierSchema = z.object({

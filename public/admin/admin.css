@@ -45,3 +45,14 @@ tbody tr:hover { background: #fafaf7; }
   .tabs { margin: 0; width: 100%; }
   .color-row { grid-template-columns: 1fr 1fr; }
 }
+
+.bg-dialog { width: min(820px, calc(100% - 24px)); border: 0; border-radius: 16px; padding: 22px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3); }
+.bg-dialog::backdrop { background: rgba(10, 10, 10, 0.5); }
+.bg-dialog h2 { margin: 0 0 4px; font-size: 1.2rem; }
+.bg-dialog .hint { color: var(--muted); margin: 0 0 14px; font-size: 0.9rem; }
+.bg-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.bg-compare figure { margin: 0; display: grid; place-items: center; gap: 6px; min-height: 260px; border-radius: 12px; background: var(--bg); padding: 10px; }
+.bg-compare img, .bg-compare canvas { max-width: 100%; max-height: 340px; object-fit: contain; }
+.bg-compare figcaption { font-size: 0.8rem; color: var(--muted); font-weight: 700; }
+.bg-compare .checker { background: repeating-conic-gradient(#e6e6e6 0 25%, #fff 0 50%) 0 0 / 18px 18px; }
+.bg-dialog input[type='range'] { width: 100%; accent-color: var(--green); }

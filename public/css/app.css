@@ -542,3 +542,16 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--g
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* ---------- WebGL (3D cloth) ---------- */
+.stage-canvas { position: absolute; top: 0; left: 0; display: block; z-index: 2; }
+.rack-3d .stage-canvas { z-index: 1; }
+.rack-3d { cursor: grab; }
+.rack-loading { position: absolute; inset: 0; display: none; place-items: center; z-index: 3; }
+.rack-3d.is-loading .rack-loading { display: grid; }
+.pdp-stage.is-3d > .rail { display: none; }
+.pdp-stage.is-3d .stage-canvas { cursor: grab; touch-action: pan-y; }
+.pdp-stage.is-3d .stage-canvas:active { cursor: grabbing; }
+/* Photos on white backgrounds blend into the light page. */
+.pdp-backdrop img, .card .face, .cat-card .circle img, .cart-line .thumb img, .summary-line img, .pdp-thumbs img { mix-blend-mode: multiply; }
+.pdp-backdrop .face.back, .pdp-backdrop .hanger { display: none; }

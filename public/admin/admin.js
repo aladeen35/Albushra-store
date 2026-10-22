@@ -1,5 +1,6 @@
 // Store admin: orders (Bankak receipts), products with per-color images, categories and settings.
 import { esc, formatPrice } from '/js/api.js';
+import { cutout, isCutout } from '/js/garment-image.js';
 import { icons } from '/js/icons.js';
 import { logo, openPanel, toast } from '/js/ui.js';
 
@@ -192,6 +193,73 @@ async function upload(file) {
   return (await call('/media', { method: 'POST', body: fd })).url;
 }
 
+/**
+ * Background removal before upload, so garments hang on the 3D rack without a white box.
+ * Shows the photo before/after with a sensitivity slider; AI removal (Workers AI) is offered for
+ * hard cases such as white clothes on a white background. Resolves to the uploaded image URL.
+ */
+async function processPhoto(file) {
+  const src = URL.createObjectURL(file);
+  if (await isCutout(src).catch(() => false)) return upload(file);
+  return new Promise((resolve, reject) => {
+    const dlg = document.createElement('dialog');
+    dlg.className = 'bg-dialog';
+    dlg.innerHTML = `<h2>تجهيز صورة القطعة</h2>
+      <p class="hint">نزيل الخلفية لتظهر القطعة معلّقة على الرف ثلاثي الأبعاد. تأكد أن القطعة كاملة وواضحة في النتيجة.</p>
+      <div class="bg-compare"><figure><img src="${src}" alt=""><figcaption>الصورة الأصلية</figcaption></figure>
+        <figure class="checker" data-result><div class="spinner"></div><figcaption>بعد إزالة الخلفية</figcaption></figure></div>
+      <label class="field"><span>حساسية الإزالة: <b data-tol-val>26</b></span><input type="range" min="6" max="70" value="26" data-tol></label>
+      <label class="check"><input type="checkbox" data-mannequin> إزالة المانيكان (الرأس واليدين) — للملابس الملونة أو الداكنة فقط</label>
+      <p class="notice err" data-err hidden></p>
+      <div class="row-actions"><button class="btn primary" data-use>${icons.check} استخدام النتيجة</button>
+        <button class="btn dark" data-ai>إزالة بالذكاء الاصطناعي (أدق للملابس البيضاء)</button>
+        <button class="btn small" data-raw>الصورة كما هي</button><button class="btn small" data-cancel>إلغاء</button></div>`;
+    document.body.append(dlg);
+    dlg.showModal();
+    let result = null;
+    const box = dlg.querySelector('[data-result]');
+    const render = async () => {
+      const tol = Number(dlg.querySelector('[data-tol]').value);
+      dlg.querySelector('[data-tol-val]').textContent = tol;
+      result = await cutout(src, tol, { mannequin: dlg.querySelector('[data-mannequin]').checked });
+      box.querySelector('canvas, .spinner')?.remove();
+      box.prepend(result);
+    };
+    render();
+    let timer;
+    dlg.querySelector('[data-mannequin]').addEventListener('change', render);
+    dlg.querySelector('[data-tol]').addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(render, 150);
+    });
+    const done = (fn) => async () => {
+      const err = dlg.querySelector('[data-err]');
+      dlg.querySelectorAll('button').forEach((b) => (b.disabled = true));
+      try {
+        resolve(await fn());
+        dlg.remove();
+      } catch (e) {
+        err.textContent = e.message === 'ai_not_configured' || /غير مفعّلة/.test(e.message) ? 'الذكاء الاصطناعي غير مفعّل بعد على Cloudflare. استخدم النتيجة أو جرّب تغيير الحساسية.' : e.message;
+        err.hidden = false;
+        dlg.querySelectorAll('button').forEach((b) => (b.disabled = false));
+      }
+    };
+    dlg.querySelector('[data-use]').addEventListener('click', done(async () => {
+      const blob = await new Promise((r) => result.toBlob(r, 'image/png'));
+      return upload(new File([blob], 'garment.png', { type: 'image/png' }));
+    }));
+    dlg.querySelector('[data-ai]').addEventListener('click', done(async () => {
+      const url = await upload(file);
+      return (await call('/media/remove-background', { method: 'POST', body: JSON.stringify({ url }) })).url;
+    }));
+    dlg.querySelector('[data-raw]').addEventListener('click', done(() => upload(file)));
+    dlg.querySelector('[data-cancel]').addEventListener('click', () => {
+      dlg.remove();
+      reject(new Error('cancelled'));
+    });
+  });
+}
+
 function productForm(product, cats, onSaved) {
   // Group existing variants by color so the form edits "colors × sizes".
   const colors = [];
@@ -221,7 +289,7 @@ function productForm(product, cats, onSaved) {
          <div class="field"><label>سعر ثابت بالجنيه <span class="hint">(اختياري)</span></label><input name="sdg" type="number" min="0" step="500" dir="ltr" value="${first?.price_sdg ?? ''}"><span class="hint">إن تُرك فارغاً يُحسب من سعر الصرف.</span></div>
        </div>
        <div class="field"><label>الوصف</label><textarea name="description">${esc(product?.description ?? '')}</textarea></div>
-       <div class="stack"><b>الألوان والصور</b><span class="hint" style="color:var(--muted);font-size:.85rem">للحصول على أفضل شكل على الرف استخدم صور PNG بخلفية شفافة للقطعة من الأمام والخلف.</span>
+       <div class="stack"><b>الألوان والصور</b><span class="hint" style="color:var(--muted);font-size:.85rem">صوّر القطعة من الأمام والخلف على خلفية بيضاء أو فاتحة بإضاءة متساوية، وسنزيل الخلفية ونحوّلها لقطعة ثلاثية الأبعاد على الرف.</span>
          <div class="stack" data-colors>${colors.map(colorRow).join('')}</div>
          <button type="button" class="btn small" data-add-color style="justify-self:start">+ إضافة لون</button></div>
        <label class="check"><input type="checkbox" name="active" ${product?.active === 0 ? '' : 'checked'}> ظاهر في المتجر</label>
@@ -251,12 +319,12 @@ function productForm(product, cats, onSaved) {
     const pick = input.closest('.img-pick');
     pick.firstChild.replaceWith(Object.assign(document.createElement('span'), { textContent: 'جاري الرفع…' }));
     try {
-      const url = await upload(input.files[0]);
+      const url = await processPhoto(input.files[0]);
       colors[Number(row.dataset.color)][input.dataset.img] = url;
       sync();
       list.innerHTML = colors.map(colorRow).join('');
     } catch (err) {
-      if (err.message !== 'unauthorized') alert(`تعذّر رفع الصورة: ${err.message === 'invalid_file_type' ? 'استخدم PNG أو JPG أو WEBP' : err.message}`);
+      if (err.message !== 'unauthorized' && err.message !== 'cancelled') alert(`تعذّر رفع الصورة: ${err.message === 'invalid_file_type' ? 'استخدم PNG أو JPG أو WEBP' : err.message}`);
       list.innerHTML = colors.map(colorRow).join('');
     }
   });

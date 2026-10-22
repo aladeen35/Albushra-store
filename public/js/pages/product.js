@@ -9,7 +9,10 @@ const sizeRank = (s) => (SIZE_ORDER.includes(s) ? SIZE_ORDER.indexOf(s) : 100 + 
 
 export default async function product(main, { slug }) {
   let cleanup = () => {};
+  let viewer = null;
   const render = async () => {
+    viewer?.destroy();
+    viewer = null;
     const region = await currentRegion();
     let data;
     try {
@@ -84,8 +87,27 @@ export default async function product(main, { slug }) {
         </div>
       </section>`;
 
+    // Real 3D cloth when the device supports WebGL; the CSS garment stays as the fallback.
+    const stageEl = main.querySelector('.pdp-stage');
+    const mod = await import('../rack3d.js').catch(() => null);
+    if (mod?.webglAvailable()) {
+      try {
+        viewer = new mod.GarmentViewer(stageEl);
+        stageEl.classList.add('is-3d');
+        viewer.onRotate = (angle) => setSideUi(Math.cos(angle) < 0);
+        await viewer.show(g0.images[0], g0.images[1]);
+        main.querySelector('.pdp-main')?.remove();
+      } catch (err) {
+        console.warn('3D viewer unavailable', err);
+        viewer?.destroy();
+        viewer = null;
+        stageEl.classList.remove('is-3d');
+      }
+    }
+
     const garment = () => main.querySelector('.pdp-main .garment');
     const fitStage = async () => {
+      if (viewer) return;
       const stage = main.querySelector('.pdp-stage');
       const len = await garmentLength(groups[state.color].images[0]);
       const w = main.querySelector('.pdp-main')?.offsetWidth ?? 300;
@@ -110,18 +132,26 @@ export default async function product(main, { slug }) {
       main.querySelectorAll('[data-color]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.color) === i)));
       const name = main.querySelector('[data-color-name]');
       if (name) name.textContent = g.color ?? '';
-      const el = garment();
-      el.querySelector('.front').src = g.images[0];
-      el.querySelector('.back').src = g.images[1] || g.images[0];
-      replay(el, 'spin');
-      replay(main.querySelector('[data-garment-wrap]'), 'arrive-swing');
+      if (viewer) {
+        viewer.show(g.images[0], g.images[1], true);
+      } else {
+        const el = garment();
+        el.querySelector('.front').src = g.images[0];
+        el.querySelector('.back').src = g.images[1] || g.images[0];
+        replay(el, 'spin');
+        replay(main.querySelector('[data-garment-wrap]'), 'arrive-swing');
+      }
       renderSizes();
       fitStage();
     };
-    const setSide = (back) => {
+    function setSideUi(back) {
       state.back = back;
-      garment().classList.toggle('show-back', back);
       main.querySelectorAll('[data-side]').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.side === 'back') === back)));
+    }
+    const setSide = (back) => {
+      setSideUi(back);
+      if (viewer) viewer.showBack(back);
+      else garment().classList.toggle('show-back', back);
     };
 
     main.querySelector('.pdp').addEventListener('click', (e) => {
@@ -164,6 +194,9 @@ export default async function product(main, { slug }) {
   await render();
   const onRegion = () => render();
   window.addEventListener('region-change', onRegion);
-  cleanup = () => window.removeEventListener('region-change', onRegion);
+  cleanup = () => {
+    window.removeEventListener('region-change', onRegion);
+    viewer?.destroy();
+  };
   return () => cleanup();
 }

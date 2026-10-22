@@ -1,0 +1,23 @@
+{
+  "name": "متجر البشرى",
+  "short_name": "البشرى",
+  "description": "أناقتك .. على ذوقك — تيشيرتات، جاكيتات، هوديز، جينز، عبايات وجلاليب سودانية",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1a0e",
+  "theme_color": "#f3f3f0",
+  "categories": ["shopping", "lifestyle"],
+  "icons": [
+    { "src": "/brand/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "المفضلة", "url": "/favorites", "icons": [{ "src": "/brand/icon-192.png", "sizes": "192x192" }] },
+    { "name": "طلباتي", "url": "/orders", "icons": [{ "src": "/brand/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

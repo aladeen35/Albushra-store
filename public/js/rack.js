@@ -226,6 +226,7 @@ export class Rack {
       else return;
       e.preventDefault();
     });
+    this.rack.addEventListener('focusin', () => this.stopAutoplay());
     this.rack.addEventListener('mouseenter', () => (this.hover = true));
     this.rack.addEventListener('mouseleave', () => (this.hover = false));
   }

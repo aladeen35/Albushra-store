@@ -23,9 +23,9 @@ export async function categoryCircles(cats, region) {
         .catch(() => []),
     ),
   );
-  return `<div class="cat-grid">${cats
+  return `<div class="cat-grid stagger">${cats
     .map(
-      (c, i) => `<a class="cat-card" href="/c/${encodeURIComponent(c.slug)}" data-link>
+      (c, i) => `<a class="cat-card" style="--i:${i}" href="/c/${encodeURIComponent(c.slug)}" data-link>
         <span class="circle">${covers[i][0] ? `<img src="${esc(covers[i][0])}" alt="" loading="lazy">` : ''}</span>${esc(c.name)}</a>`,
     )
     .join('')}</div>`;
@@ -52,7 +52,7 @@ export default async function home(main) {
   const load = async (cat) => {
     const r = await currentRegion();
     const data = await api(`/products?limit=14&region=${r}${cat ? `&category=${encodeURIComponent(cat)}` : ''}`).catch(() => ({ products: [] }));
-    rack.setProducts(data.products);
+    await rack.setProducts(data.products);
   };
   main.querySelector('.rack-filters').addEventListener('click', (e) => {
     const chip = e.target.closest('[data-cat]');

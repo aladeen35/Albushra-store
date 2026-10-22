@@ -6,21 +6,91 @@
     <title>متجر البشرى | أناقتك .. على ذوقك</title>
     <meta name="description" content="متجر البشرى لبيع الملابس: تيشيرتات، جاكيتات، هوديز، جينز، عبايات نسائية وجلاليب سودانية. شحن لداخل السودان وخارجه." />
     <meta name="theme-color" content="#f3f3f0" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="البشرى" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta property="og:title" content="متجر البشرى" />
     <meta property="og:description" content="أناقتك .. على ذوقك" />
     <meta property="og:image" content="/brand/og.jpg" />
     <link rel="icon" href="/brand/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/brand/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="preload" href="/fonts/cairo-arabic.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/lalezar-arabic.woff2" as="font" type="font/woff2" crossorigin />
+    <script>
+      // Splash: always in the app / installed PWA, once per session on the website.
+      (function () {
+        var d = document.documentElement;
+        var app = /AlbushraApp/.test(navigator.userAgent) || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+        if (app) d.classList.add('is-app');
+        var seen = false;
+        try { seen = sessionStorage.getItem('bushra.splash') === '1'; sessionStorage.setItem('bushra.splash', '1'); } catch (e) {}
+        if (app || !seen) d.classList.add('splash-on');
+      })();
+    </script>
+    <style>
+      /* Critical splash styles (inline so the brand shows on the very first paint). */
+      #splash { display: none; }
+      .splash-on #splash {
+        position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; overflow: hidden;
+        background: radial-gradient(120% 80% at 50% 38%, #1d4a1b 0%, #0f1a0e 48%, #0a0d0a 100%);
+        color: #fff; font-family: 'Lalezar', 'Cairo', system-ui, sans-serif;
+        transition: opacity 0.28s ease, visibility 0.28s;
+      }
+      .splash-on #splash.out { opacity: 0; visibility: hidden; }
+      .splash-on #splash.out .splash-inner { transform: scale(1.06); }
+      .splash-on.splash-lock body { overflow: hidden; }
+      .splash-inner { display: grid; justify-items: center; gap: 6px; transition: transform 0.28s ease; padding: 0 16px; }
+      .splash-glow { position: absolute; width: 70vmin; height: 70vmin; border-radius: 50%; background: radial-gradient(circle, rgba(90, 214, 30, 0.28), transparent 65%); animation: sp-breathe 3.2s ease-in-out infinite; }
+      .splash-mark { width: min(46vw, 210px); height: auto; overflow: visible; position: relative; }
+      .splash-mark .draw { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; animation: sp-draw 0.9s cubic-bezier(0.65, 0, 0.35, 1) forwards; }
+      .splash-mark .hook { animation-duration: 0.5s; }
+      .splash-mark .body { animation-delay: 0.35s; }
+      .splash-mark .swoosh { animation-delay: 0.85s; animation-duration: 0.6s; }
+      .splash-mark .leaf { transform-origin: 72px 12px; transform: scale(0) rotate(-40deg); animation: sp-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.05s forwards; }
+      .splash-word { font-size: clamp(2.4rem, 11vw, 3.6rem); line-height: 1.1; opacity: 0; transform: translateY(14px); animation: sp-rise 0.45s cubic-bezier(0.22, 0.8, 0.24, 1) 0.95s forwards; }
+      .splash-word em { font-style: normal; color: #5ad61e; }
+      .splash-tag { font-family: 'Cairo', system-ui, sans-serif; font-weight: 600; font-size: 1rem; color: rgba(255, 255, 255, 0.78); opacity: 0; letter-spacing: 0.3em; animation: sp-tag 0.6s cubic-bezier(0.22, 0.8, 0.24, 1) 1.2s forwards; }
+      .splash-bar { position: absolute; bottom: calc(56px + env(safe-area-inset-bottom)); width: min(52vw, 220px); height: 3px; border-radius: 3px; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
+      .splash-bar i { display: block; height: 100%; width: calc(var(--p, 0.08) * 100%); background: linear-gradient(90deg, #5ad61e, #b5f28f); border-radius: inherit; transition: width 0.35s ease; }
+      .splash-ver { position: absolute; bottom: calc(24px + env(safe-area-inset-bottom)); font: 600 0.72rem 'Cairo', system-ui, sans-serif; color: rgba(255, 255, 255, 0.45); letter-spacing: 0.08em; }
+      @keyframes sp-draw { from { stroke-dashoffset: 1; opacity: 1; } to { stroke-dashoffset: 0; opacity: 1; } }
+      @keyframes sp-pop { to { transform: scale(1) rotate(0); } }
+      @keyframes sp-rise { to { opacity: 1; transform: none; } }
+      @keyframes sp-tag { to { opacity: 1; letter-spacing: 0.02em; } }
+      @keyframes sp-breathe { 0%, 100% { transform: scale(0.92); opacity: 0.8; } 50% { transform: scale(1.06); opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) {
+        .splash-mark .draw { stroke-dashoffset: 0; opacity: 1; animation: none; }
+        .splash-mark .leaf { transform: none; animation: none; }
+        .splash-word, .splash-tag { opacity: 1; transform: none; animation: none; letter-spacing: normal; }
+        .splash-glow { animation: none; }
+      }
+    </style>
     <link rel="stylesheet" href="/css/app.css" />
   </head>
   <body>
+    <div id="splash" role="status" aria-label="جاري تحميل متجر البشرى">
+      <div class="splash-glow" aria-hidden="true"></div>
+      <div class="splash-inner" aria-hidden="true">
+        <svg class="splash-mark" viewBox="0 0 120 74">
+          <path class="draw hook" pathLength="1" d="M60 30c0-9-11-9-11-17 0-6 6-10 12-9 6 1 8 7 5 11" stroke="#fff" stroke-width="5.5" />
+          <path class="draw body" pathLength="1" d="M60 29 13 60q-6 4 1 4h92q7 0 1-4L60 29Z" stroke="#fff" stroke-width="7" />
+          <path class="draw swoosh" pathLength="1" d="M20 62q40-14 80 0" stroke="#5ad61e" stroke-width="5" />
+          <g class="leaf"><path d="M68 13q11-15 27-11-6 16-27 11Z" fill="#5ad61e" /><path d="M70 12q6-12 17-14-2 9-17 14Z" fill="#b5f28f" /></g>
+        </svg>
+        <div class="splash-word">متجر <em>البشرى</em></div>
+        <div class="splash-tag">أناقتك .. على ذوقك</div>
+      </div>
+      <div class="splash-bar" aria-hidden="true"><i></i></div>
+      <div class="splash-ver" aria-hidden="true">ALBUSHRA STORE</div>
+    </div>
     <a class="skip-link" href="#main">تخطَّ إلى المحتوى</a>
     <div id="app">
       <header class="site-header" id="site-header"></header>
       <main id="main" tabindex="-1"></main>
       <footer class="site-footer" id="site-footer"></footer>
     </div>
+    <nav class="tabbar" id="tabbar" aria-label="التنقل السفلي"></nav>
     <div id="overlays"></div>
     <noscript><p class="noscript">يحتاج المتجر إلى تفعيل JavaScript في المتصفح.</p></noscript>
     <script type="module" src="/js/app.js"></script>

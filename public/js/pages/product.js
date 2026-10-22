@@ -2,7 +2,9 @@ import { api, colorGroups, colorSwatch, currentRegion, esc, formatPrice } from '
 import { cart } from '../cart.js';
 import { icons } from '../icons.js';
 import { garmentLength, garmentMarkup, replay } from '../rack.js';
+import { haptic } from '../favorites.js';
 import { navigate, openCart, toast } from '../ui.js';
+import { favButton } from './catalog.js';
 
 const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
 const sizeRank = (s) => (SIZE_ORDER.includes(s) ? SIZE_ORDER.indexOf(s) : 100 + (Number(s) || 0));
@@ -63,7 +65,7 @@ export default async function product(main, { slug }) {
           ${next ? `<a class="rack-arrow next" href="/p/${encodeURIComponent(next.slug)}" data-link aria-label="المنتج التالي">${icons.next}</a>` : ''}
         </div>
         <div class="pdp-info">
-          <h1>${esc(p.name)}</h1>
+          <div class="pdp-title"><h1>${esc(p.name)}</h1>${favButton(p.slug, p.name)}</div>
           <p class="price" data-price></p>
           <div class="toggle" role="group" aria-label="جهة العرض">
             <button type="button" data-side="front" aria-pressed="true">أمام</button>
@@ -85,8 +87,13 @@ export default async function product(main, { slug }) {
             <details class="details"><summary>الشحن والدفع</summary><p>داخل السودان: الدفع عبر تطبيق بنكك ثم رفع صورة الإشعار. خارج السودان: الدفع الآمن بالبطاقة. يتم تجهيز الطلب وشحنه بعد تأكيد الدفع.</p></details>
           </div>
         </div>
+        <div class="buy-bar" data-buybar>
+          <div class="buy-bar-info"><span>${esc(p.name)}</span><b data-price-sticky></b></div>
+          <button class="btn primary" type="button" data-add>${icons.bag} أضف إلى السلة</button>
+        </div>
       </section>`;
 
+    document.body.classList.add('has-buybar');
     // Real 3D cloth when the device supports WebGL; the CSS garment stays as the fallback.
     const stageEl = main.querySelector('.pdp-stage');
     const mod = await import('../rack3d.js').catch(() => null);
@@ -121,7 +128,10 @@ export default async function product(main, { slug }) {
         .join('');
       const selected = g.variants.find((v) => v.size === state.size);
       const prices = g.variants.map((v) => v.price);
-      main.querySelector('[data-price]').textContent = selected ? formatPrice(selected.price, p.currency) : formatPrice(Math.min(...prices), p.currency);
+      const priceText = selected ? formatPrice(selected.price, p.currency) : formatPrice(Math.min(...prices), p.currency);
+      main.querySelector('[data-price]').textContent = priceText;
+      const sticky = main.querySelector('[data-price-sticky]');
+      if (sticky) sticky.textContent = priceText;
       main.querySelector('[data-size-name]').textContent = state.size ?? 'اختر المقاس';
     };
     const setColor = (i) => {
@@ -181,9 +191,12 @@ export default async function product(main, { slug }) {
         if (!variant) {
           err.textContent = 'اختر المقاس أولاً';
           err.hidden = false;
+          main.querySelector('[data-sizes]').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          haptic(30);
           return;
         }
         cart.add(variant.id, state.qty);
+        haptic();
         toast('تمت الإضافة إلى السلة');
         openCart();
       }
@@ -195,6 +208,7 @@ export default async function product(main, { slug }) {
   const onRegion = () => render();
   window.addEventListener('region-change', onRegion);
   cleanup = () => {
+    document.body.classList.remove('has-buybar');
     window.removeEventListener('region-change', onRegion);
     viewer?.destroy();
   };

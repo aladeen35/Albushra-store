@@ -33,7 +33,7 @@ export function renderHeader() {
         <button class="region-btn hide-sm" type="button" data-open="region" aria-label="تغيير بلد الشحن والعملة"><span class="dot"></span><span data-region-label>…</span></button>
         <a class="text-link hide-md" href="/contact" data-link>اتصل بنا</a>
         <button class="icon-btn" type="button" data-open="search" aria-label="بحث">${icons.search}</button>
-        <button class="icon-btn" type="button" data-open="cart" aria-label="السلة">${icons.cart}<span class="badge" data-cart-count></span></button>
+        <button class="icon-btn hide-tabbar" type="button" data-open="cart" aria-label="السلة">${icons.cart}<span class="badge" data-cart-count></span></button>
       </div>
     </div>
     <nav class="main-nav" aria-label="القائمة الرئيسية"><ul>${NAV.map((n) => `<li><a href="${n.href}" data-link>${n.label}</a></li>`).join('')}</ul></nav>`;
@@ -54,7 +54,44 @@ export function renderHeader() {
   window.addEventListener('region-change', updateRegionLabel);
 }
 
+const TABS = [
+  { href: '/', label: 'الرئيسية', icon: 'home', match: (p) => p === '/' },
+  { href: '/categories', label: 'الأقسام', icon: 'grid', match: (p) => p.startsWith('/categories') || p.startsWith('/c/') || p.startsWith('/products') || p.startsWith('/p/') },
+  { href: '/favorites', label: 'المفضلة', icon: 'heart', match: (p) => p.startsWith('/favorites') },
+  { action: 'cart', label: 'السلة', icon: 'bag', match: (p) => p.startsWith('/checkout') },
+  { href: '/orders', label: 'طلباتي', icon: 'receipt', match: (p) => p.startsWith('/orders') || p.startsWith('/order/') },
+];
+
+/** App-style bottom navigation (phones and the installed app). */
+export function renderTabbar() {
+  const bar = document.getElementById('tabbar');
+  if (!bar) return;
+  bar.innerHTML = `<ul>${TABS.map((t, i) => {
+    const inner = `<span class="tab-icon">${icons[t.icon]}${t.action === 'cart' ? '<span class="badge" data-cart-count></span>' : ''}${t.href === '/favorites' ? '<span class="badge" data-fav-count></span>' : ''}</span><span class="tab-label">${t.label}</span>`;
+    return `<li>${t.href ? `<a href="${t.href}" data-link data-tab="${i}">${inner}</a>` : `<button type="button" data-tab="${i}" data-open-cart aria-haspopup="dialog">${inner}</button>`}</li>`;
+  }).join('')}</ul>`;
+  bar.addEventListener('click', (e) => {
+    if (e.target.closest('[data-open-cart]')) openCart();
+  });
+  updateCartBadge();
+  updateFavBadge();
+  window.addEventListener('favorites-change', updateFavBadge);
+}
+
+function updateFavBadge() {
+  let n = 0;
+  try {
+    n = JSON.parse(localStorage.getItem('bushra.favorites') || '[]').length;
+  } catch {}
+  document.querySelectorAll('[data-fav-count]').forEach((el) => (el.textContent = n ? String(n) : ''));
+}
+
 export function setActiveNav(path) {
+  document.querySelectorAll('#tabbar [data-tab]').forEach((el) => {
+    const on = TABS[Number(el.dataset.tab)].match(path);
+    if (on) el.setAttribute('aria-current', 'page');
+    else el.removeAttribute('aria-current');
+  });
   document.querySelectorAll('.main-nav a').forEach((a) => {
     const href = a.getAttribute('href');
     const on = href === '/' ? path === '/' : path.startsWith(href) || (href === '/products' && path.startsWith('/p/'));
@@ -136,6 +173,13 @@ function overlay(html, cls) {
 export function closeOverlay() {
   closeCurrent?.();
 }
+
+/** Android back button: close an open drawer/dialog first (returns true when handled). */
+window.__appBack = () => {
+  if (!closeCurrent) return false;
+  closeCurrent();
+  return true;
+};
 
 async function openMenu() {
   const cats = await getCategories();

@@ -168,7 +168,15 @@ export class Rack3D {
     }
     let data;
     try {
-      data = await Promise.all(products.map((p) => prepareGarment(...firstImages(p))));
+      let ready = 0;
+      data = await Promise.all(
+        products.map((p) =>
+          prepareGarment(...firstImages(p)).then((d) => {
+            window.dispatchEvent(new CustomEvent('rack-progress', { detail: ++ready / products.length }));
+            return d;
+          }),
+        ),
+      );
     } catch (err) {
       console.warn('3D rack unavailable, falling back', err);
       this.onFail?.(products);
@@ -334,6 +342,7 @@ export class Rack3D {
       else return;
       e.preventDefault();
     });
+    el.addEventListener('focusin', () => this.stopAutoplay());
     el.addEventListener('mouseenter', () => (this.hover = true));
     el.addEventListener('mouseleave', () => (this.hover = false));
   }

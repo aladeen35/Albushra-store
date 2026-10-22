@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Launch theme: same dark green as the web splash, so the app opens without a white flash. -->
+  <style name="Bushra.Launch" parent="@android:style/Theme.Material.Light.NoActionBar">
+    <item name="android:windowBackground">@drawable/launch_bg</item>
+    <item name="android:statusBarColor">@color/splash_bg</item>
+    <item name="android:navigationBarColor">@color/splash_bg</item>
+  </style>
+</resources>

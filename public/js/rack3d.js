@@ -6,6 +6,7 @@ import { colorGroups, esc, formatPrice } from './api.js';
 import { prepareGarment } from './garment-image.js';
 import { Garment3D } from './garment3d.js';
 import { icons } from './icons.js';
+import { revealWords } from './motion.js';
 
 const CAMERA_Z = 6;
 const RAIL_PX = 46;
@@ -133,8 +134,8 @@ export class Rack3D {
     root.innerHTML = `
       <div class="rack rack-3d" tabindex="0" role="listbox" aria-label="الملابس المعروضة على الرف" aria-roledescription="رف ملابس">
         <div class="rack-loading"><div class="spinner"></div></div>
-        <button class="rack-arrow prev" type="button" aria-label="القطعة السابقة">${icons.prev}</button>
-        <button class="rack-arrow next" type="button" aria-label="القطعة التالية">${icons.next}</button>
+        <button class="rack-arrow prev" type="button" aria-label="القطعة السابقة" data-magnet="40">${icons.prev}</button>
+        <button class="rack-arrow next" type="button" aria-label="القطعة التالية" data-magnet="40">${icons.next}</button>
       </div>
       <div class="rack-caption" aria-live="polite"></div>`;
     this.rack = root.querySelector('.rack');
@@ -286,7 +287,8 @@ export class Rack3D {
     this.caption.innerHTML = `
       <h2>${esc(p.name)}</h2>
       <p class="meta"><b>${esc(formatPrice(p.minPrice, p.currency))}</b>${colors > 1 ? ` · ${colors} ألوان` : ''}</p>
-      <a class="btn" href="/p/${encodeURIComponent(p.slug)}" data-link>${icons.bag} تسوق الآن</a>`;
+      <a class="btn" href="/p/${encodeURIComponent(p.slug)}" data-link data-magnet="50">${icons.bag} تسوق الآن</a>`;
+    revealWords(this.caption);
   }
 
   pick(e) {

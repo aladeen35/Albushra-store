@@ -2,7 +2,9 @@
 import { splashDone, splashProgress } from './splash.js';
 import { favorites, haptic } from './favorites.js';
 import { icons } from './icons.js';
-import { favoritesPage, ordersPage } from './pages/account.js';
+import { initMagnets, initSmoothScroll, resetScroll, revealPage, spark } from './motion.js';
+import { ordersPage } from './pages/account.js';
+import tryon from './pages/tryon.js';
 import { categories, products } from './pages/catalog.js';
 import checkout, { order } from './pages/checkout.js';
 import home from './pages/home.js';
@@ -20,7 +22,7 @@ const ROUTES = [
   [/^\/order\/([^/]+)\/?$/, (m, q, [number]) => order(m, { number: decodeURIComponent(number), query: q })],
   [/^\/about\/?$/, (m) => about(m)],
   [/^\/contact\/?$/, (m) => contact(m)],
-  [/^\/favorites\/?$/, (m) => favoritesPage(m)],
+  [/^\/(tryon|favorites)\/?$/, (m, q) => tryon(m, { query: q })],
   [/^\/orders\/?$/, (m) => ordersPage(m)],
 ];
 
@@ -66,12 +68,13 @@ function enter(id) {
   void main.offsetWidth;
   main.classList.add('page-enter');
   splashDone();
+  revealPage(main);
 }
 
 function go(url, replace = false) {
   if (url === window.location.pathname + window.location.search) return;
   history[replace ? 'replaceState' : 'pushState']({}, '', url);
-  window.scrollTo({ top: 0, behavior: 'instant' });
+  resetScroll();
   render();
 }
 
@@ -101,6 +104,14 @@ document.addEventListener('click', (e) => {
   haptic();
   toast(on ? 'أُضيفت إلى المفضلة' : 'أُزيلت من المفضلة');
 });
+
+// Spark burst on confirming actions (add to cart, favourite, try on).
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-spark], [data-add], [data-fav]');
+  if (el) spark({ x: e.clientX || el.getBoundingClientRect().left, y: e.clientY || el.getBoundingClientRect().top });
+});
+initSmoothScroll();
+initMagnets();
 
 // Splash progress: fonts, then the 3D rack's garments as they are prepared.
 splashProgress(0.18);

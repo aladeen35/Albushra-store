@@ -68,6 +68,72 @@ function surface(shape, side) {
   return g;
 }
 
+/**
+ * Side wall along the garment's outline, joining the front and back surfaces so no slit shows
+ * when the garment turns sideways. The outline comes from marching squares on the coverage grid;
+ * each wall quad takes its colour from the fabric just inside the edge.
+ * Returns the geometry plus each vertex's grid position (for binding to the cloth simulation).
+ */
+function rim(shape) {
+  const { cols, rows, aspect, top, mask } = shape;
+  const s = garmentScale(shape);
+  const half = 0.03 * s; // half the wall height (front-to-back)
+  const at = (c, r) => mask[Math.min(rows - 1, Math.max(0, r)) * cols + Math.min(cols - 1, Math.max(0, c))];
+  const segs = [];
+  for (let r = 0; r < rows - 1; r++) {
+    for (let c = 0; c < cols - 1; c++) {
+      const v = [at(c, r), at(c + 1, r), at(c + 1, r + 1), at(c, r + 1)];
+      const corner = [[c, r], [c + 1, r], [c + 1, r + 1], [c, r + 1]];
+      const pts = [];
+      for (let e = 0; e < 4; e++) {
+        const a = v[e];
+        const b = v[(e + 1) % 4];
+        if ((a > 0.5) === (b > 0.5)) continue;
+        const t = (0.5 - a) / (b - a);
+        const [x0, y0] = corner[e];
+        const [x1, y1] = corner[(e + 1) % 4];
+        pts.push([x0 + (x1 - x0) * t, y0 + (y1 - y0) * t]);
+      }
+      if (pts.length === 2) segs.push(pts);
+      else if (pts.length === 4) segs.push([pts[0], pts[1]], [pts[2], pts[3]]);
+    }
+  }
+  const pos = [];
+  const uv = [];
+  const grid = [];
+  const inward = (gx, gy) => {
+    // Mask gradient points into the garment.
+    const c = Math.round(gx);
+    const r = Math.round(gy);
+    let dx = at(c + 1, r) - at(c - 1, r);
+    let dy = at(c, r + 1) - at(c, r - 1);
+    const len = Math.hypot(dx, dy) || 1;
+    return [(dx / len) * 1.6, (dy / len) * 1.6];
+  };
+  const toWorld = (gx, gy) => [(gx / (cols - 1) - 0.5) * s, -HANG_DROP - (gy / (rows - 1) - top) * aspect * s];
+  for (const [[ax, ay], [bx, by]] of segs) {
+    const [nx, ny] = inward((ax + bx) / 2, (ay + by) / 2);
+    const [wax, way] = toWorld(ax, ay);
+    const [wbx, wby] = toWorld(bx, by);
+    const ua = [(ax + nx) / (cols - 1), 1 - (ay + ny) / (rows - 1)];
+    const ub = [(bx + nx) / (cols - 1), 1 - (by + ny) / (rows - 1)];
+    const quad = [
+      [wax, way, half, ua, ax, ay], [wbx, wby, half, ub, bx, by], [wbx, wby, -half, ub, bx, by],
+      [wax, way, half, ua, ax, ay], [wbx, wby, -half, ub, bx, by], [wax, way, -half, ua, ax, ay],
+    ];
+    for (const [x, y, z, [u, w], gx, gy] of quad) {
+      pos.push(x, y, z);
+      uv.push(Math.min(1, Math.max(0, u)), Math.min(1, Math.max(0, w)));
+      grid.push(gx, gy);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.computeVertexNormals();
+  return { geometry: g, grid };
+}
+
 function hanger(shape) {
   const group = new THREE.Group();
   const half = Math.min(BODY_WIDTH * 0.47, (shape.shoulder * garmentScale(shape)) / 2 - 0.02);
@@ -193,10 +259,10 @@ export class Garment3D {
         map,
         normalMap: this.normalTex,
         normalScale: new THREE.Vector2(0.55, 0.55),
-        roughness: 0.92,
+        roughness: 0.95,
         metalness: 0,
         alphaTest: 0.5,
-        envMapIntensity: 0.55,
+        envMapIntensity: 0.42,
       });
     this.front = new THREE.Mesh(surface(shape, 1), mat(this.frontTex));
     this.back = new THREE.Mesh(surface(shape, -1), mat(this.backTex));
@@ -204,11 +270,25 @@ export class Garment3D {
       m.castShadow = true;
       this.turn.add(m);
     }
+    const side = rim(shape);
+    this.rim = new THREE.Mesh(
+      side.geometry,
+      new THREE.MeshStandardMaterial({ map: this.frontTex, side: THREE.DoubleSide, roughness: 0.97, metalness: 0, envMapIntensity: 0.3 }),
+    );
+    this.rim.castShadow = true;
+    this.turn.add(this.rim);
     this.turn.add(hanger(shape));
 
-    this.rest = [this.front, this.back].map((m) => Float32Array.from(m.geometry.attributes.position.array));
     this.sim = new ClothSim(shape);
-    this.bindSim();
+    // Every deforming mesh with its rest positions and its binding to the cloth simulation.
+    const grid = [];
+    for (let r = 0; r < shape.rows; r++) for (let c = 0; c < shape.cols; c++) grid.push(c, r);
+    const surfaceBinding = this.bindPoints(grid);
+    this.deformables = [
+      { mesh: this.front, binding: surfaceBinding },
+      { mesh: this.back, binding: surfaceBinding },
+      { mesh: this.rim, binding: this.bindPoints(side.grid) },
+    ].map((d) => ({ ...d, rest: Float32Array.from(d.mesh.geometry.attributes.position.array) }));
 
     this.swing = { angle: 0, vel: 0 };
     this.spin = null;
@@ -219,25 +299,24 @@ export class Garment3D {
     this.breeze = 0.35;
   }
 
-  /** Precomputes, for each render vertex, its 4 neighbouring sim particles and weights. */
-  bindSim() {
+  /** For points given in shape-grid coordinates [c0, r0, c1, r1, …]: their 4 neighbouring sim particles and weights. */
+  bindPoints(grid) {
     const { cols, rows } = this.shape;
     const sc = this.sim.cols;
     const sr = this.sim.rows;
-    this.binding = new Float32Array(cols * rows * 8);
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const fx = (c / (cols - 1)) * (sc - 1);
-        const fy = (r / (rows - 1)) * (sr - 1);
-        const x0 = Math.min(sc - 2, Math.floor(fx));
-        const y0 = Math.min(sr - 2, Math.floor(fy));
-        const tx = fx - x0;
-        const ty = fy - y0;
-        const b = (r * cols + c) * 8;
-        const i00 = y0 * sc + x0;
-        this.binding.set([i00, i00 + 1, i00 + sc, i00 + sc + 1, (1 - tx) * (1 - ty), tx * (1 - ty), (1 - tx) * ty, tx * ty], b);
-      }
+    const n = grid.length / 2;
+    const binding = new Float32Array(n * 8);
+    for (let k = 0; k < n; k++) {
+      const fx = Math.min(sc - 1, Math.max(0, (grid[k * 2] / (cols - 1)) * (sc - 1)));
+      const fy = Math.min(sr - 1, Math.max(0, (grid[k * 2 + 1] / (rows - 1)) * (sr - 1)));
+      const x0 = Math.min(sc - 2, Math.floor(fx));
+      const y0 = Math.min(sr - 2, Math.floor(fy));
+      const tx = fx - x0;
+      const ty = fy - y0;
+      const i00 = y0 * sc + x0;
+      binding.set([i00, i00 + 1, i00 + sc, i00 + sc + 1, (1 - tx) * (1 - ty), tx * (1 - ty), (1 - tx) * ty, tx * ty], k * 8);
     }
+    return binding;
   }
 
   /** Full 360° turn (with the cloth flaring out and trailing), ending on the current side. */
@@ -314,11 +393,9 @@ export class Garment3D {
 
   applySim() {
     const o = this.sim.o;
-    const bind = this.binding;
-    [this.front, this.back].forEach((mesh, side) => {
+    for (const { mesh, rest, binding: bind } of this.deformables) {
       const attr = mesh.geometry.attributes.position;
       const pos = attr.array;
-      const rest = this.rest[side];
       for (let v = 0, b = 0; v < pos.length; v += 3, b += 8) {
         let dx = 0;
         let dy = 0;
@@ -336,15 +413,18 @@ export class Garment3D {
       }
       attr.needsUpdate = true;
       mesh.geometry.computeVertexNormals();
-    });
+    }
   }
 
   setImages(data) {
     // Colour change: swap textures in place (same geometry is close enough for colour variants).
-    this.front.material.map = this.frontTex = texture(data.front);
+    this.frontTex.dispose();
+    this.backTex.dispose();
+    this.front.material.map = this.rim.material.map = this.frontTex = texture(data.front);
     this.back.material.map = this.backTex = texture(data.back);
     this.front.material.needsUpdate = true;
     this.back.material.needsUpdate = true;
+    this.rim.material.needsUpdate = true;
   }
 
   dispose() {
@@ -354,6 +434,7 @@ export class Garment3D {
     for (const t of [this.frontTex, this.backTex, this.normalTex]) t.dispose();
     this.front.material.dispose();
     this.back.material.dispose();
+    this.rim.material.dispose();
   }
 }
 

@@ -1,6 +1,7 @@
 import { api, currentRegion, esc, formatPrice, getCategories, getConfig, setRegion } from './api.js';
 import { cart } from './cart.js';
 import { icons, logoMark } from './icons.js';
+import { lockScroll } from './motion.js';
 
 export const NAV = [
   { href: '/', label: 'الرئيسية' },
@@ -57,7 +58,7 @@ export function renderHeader() {
 const TABS = [
   { href: '/', label: 'الرئيسية', icon: 'home', match: (p) => p === '/' },
   { href: '/categories', label: 'الأقسام', icon: 'grid', match: (p) => p.startsWith('/categories') || p.startsWith('/c/') || p.startsWith('/products') || p.startsWith('/p/') },
-  { href: '/favorites', label: 'المفضلة', icon: 'heart', match: (p) => p.startsWith('/favorites') },
+  { href: '/tryon', label: 'جرّبها', icon: 'mannequin', match: (p) => p.startsWith('/tryon') || p.startsWith('/favorites') },
   { action: 'cart', label: 'السلة', icon: 'bag', match: (p) => p.startsWith('/checkout') },
   { href: '/orders', label: 'طلباتي', icon: 'receipt', match: (p) => p.startsWith('/orders') || p.startsWith('/order/') },
 ];
@@ -67,7 +68,7 @@ export function renderTabbar() {
   const bar = document.getElementById('tabbar');
   if (!bar) return;
   bar.innerHTML = `<ul>${TABS.map((t, i) => {
-    const inner = `<span class="tab-icon">${icons[t.icon]}${t.action === 'cart' ? '<span class="badge" data-cart-count></span>' : ''}${t.href === '/favorites' ? '<span class="badge" data-fav-count></span>' : ''}</span><span class="tab-label">${t.label}</span>`;
+    const inner = `<span class="tab-icon">${icons[t.icon]}${t.action === 'cart' ? '<span class="badge" data-cart-count></span>' : ''}${t.href === '/tryon' ? '<span class="badge" data-fav-count></span>' : ''}</span><span class="tab-label">${t.label}</span>`;
     return `<li>${t.href ? `<a href="${t.href}" data-link data-tab="${i}">${inner}</a>` : `<button type="button" data-tab="${i}" data-open-cart aria-haspopup="dialog">${inner}</button>`}</li>`;
   }).join('')}</ul>`;
   bar.addEventListener('click', (e) => {
@@ -141,7 +142,9 @@ function overlay(html, cls) {
   panel.className = cls;
   panel.setAttribute('role', 'dialog');
   panel.setAttribute('aria-modal', 'true');
+  panel.setAttribute('data-lenis-prevent', ''); // drawers scroll natively while the page stays put
   panel.innerHTML = html;
+  lockScroll(true);
   root.append(scrim, panel);
   const previous = document.activeElement;
   requestAnimationFrame(() => {
@@ -154,6 +157,7 @@ function overlay(html, cls) {
     scrim.classList.remove('open');
     panel.classList.remove('open');
     document.removeEventListener('keydown', onKey);
+    lockScroll(false);
     setTimeout(() => {
       scrim.remove();
       panel.remove();

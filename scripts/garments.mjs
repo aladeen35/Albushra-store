@@ -258,7 +258,44 @@ function jalabiya({ color, embroidery, side }) {
   );
 }
 
+// ---------- Hats (drawn at the top of the canvas; the cut-out crops them) ----------
+function taqiya({ color, thread, side }) {
+  const dome = 'M110 150 Q108 62 200 56 Q292 62 290 150 Z';
+  const front = side === 'front';
+  const zig = Array.from({ length: 12 }, (_, i) => `${116 + i * 14.5},${i % 2 ? 133 : 143}`).join(' ');
+  return svg(
+    `<path d="${dome}"/>`,
+    `<path d="${dome}" fill="${color}"/>
+     <rect x="110" y="122" width="180" height="28" fill="${shade(color, -0.04)}"/>
+     <polyline points="${zig}" fill="none" stroke="${thread}" stroke-width="3"/>
+     ${stitch('M110 124 L290 124', thread, 0.9)}${stitch('M110 148 L290 148', thread, 0.9)}
+     ${front ? `${[150, 175, 200, 225, 250].map((x) => `<circle cx="${x}" cy="100" r="5" fill="none" stroke="${thread}" stroke-width="2.5"/>`).join('')}
+       <path d="M150 85 Q200 70 250 85" fill="none" stroke="${thread}" stroke-width="2.5"/>` : `<path d="M140 95 Q200 80 260 95" fill="none" stroke="${thread}" stroke-width="2.5"/>`}
+     ${fold('M130 140 Q140 100 160 75', 0.08)}${hilite('M170 70 Q200 62 230 70', 0.35)}`,
+  );
+}
+
+function cap({ color, side }) {
+  const crown = 'M118 150 Q116 60 200 54 Q284 60 282 150 Z';
+  const brim = 'M86 148 Q200 128 314 148 Q316 168 300 176 Q200 160 100 176 Q84 168 86 148 Z';
+  const front = side === 'front';
+  return svg(
+    `<path d="${crown}"/>${front ? `<path d="${brim}"/>` : ''}`,
+    `<path d="${crown}" fill="${color}"/>
+     <path d="M200 56 L200 150" stroke="${shade(color, -0.25)}" stroke-width="2"/>
+     <path d="M200 56 Q160 80 150 150" fill="none" stroke="${shade(color, -0.25)}" stroke-width="2"/>
+     <path d="M200 56 Q240 80 250 150" fill="none" stroke="${shade(color, -0.25)}" stroke-width="2"/>
+     <circle cx="200" cy="56" r="7" fill="${shade(color, -0.3)}"/>
+     ${front
+       ? `<path d="${brim}" fill="${shade(color, -0.12)}"/>${stitch('M96 152 Q200 136 304 152', '#fff', 0.6)}${mark(200, 118, 0.42, '#fff', '#b5f28f')}`
+       : `<path d="M170 150 Q200 112 230 150 Z" fill="${shade(color, -0.45)}"/><rect x="176" y="140" width="48" height="8" rx="3" fill="${shade(color, 0.2)}"/>`}
+     ${hilite('M150 80 Q200 64 250 80', 0.25)}`,
+  );
+}
+
 const PIECES = {
+  'taqiya-white': (s) => taqiya({ color: '#f6f5f0', thread: '#b9ab86', side: s }),
+  'cap-green': (s) => cap({ color: '#2f9e35', side: s }),
   'tee-yellow': (s) => tshirt({ color: '#f6c516', print: 'type', ink: '#111', side: s }),
   'tee-white': (s) => tshirt({ color: '#f4f4f1', print: 'mark', ink: '#111', side: s }),
   'tee-black': (s) => tshirt({ color: '#1d1d1f', print: 'mark', ink: '#f2f2f2', side: s }),

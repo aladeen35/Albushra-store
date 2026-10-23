@@ -66,6 +66,7 @@ export default async function product(main, { slug }) {
         </div>
         <div class="pdp-info">
           <div class="pdp-title"><h1>${esc(p.name)}</h1>${favButton(p.slug, p.name)}</div>
+          <div class="try-row"><a class="btn try-btn" href="/tryon?wear=${encodeURIComponent(p.slug)}" data-link data-spark data-magnet="40">${icons.mannequin}<span class="shiny-text">جرّبها على المانيكان</span></a></div>
           <p class="price" data-price></p>
           <div class="toggle" role="group" aria-label="جهة العرض">
             <button type="button" data-side="front" aria-pressed="true">أمام</button>
@@ -100,6 +101,7 @@ export default async function product(main, { slug }) {
     if (mod?.webglAvailable()) {
       try {
         viewer = new mod.GarmentViewer(stageEl);
+        if (new URLSearchParams(location.search).has('debug3d')) window.__viewer = viewer; // dev hook for visual checks
         stageEl.classList.add('is-3d');
         viewer.onRotate = (angle) => setSideUi(Math.cos(angle) < 0);
         await viewer.show(g0.images[0], g0.images[1]);

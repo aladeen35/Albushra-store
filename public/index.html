@@ -33,10 +33,10 @@
       #splash { display: none; }
       .splash-on #splash {
         position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; overflow: hidden;
-        background: radial-gradient(120% 80% at 50% 38%, #1d4a1b 0%, #0f1a0e 48%, #0a0d0a 100%);
         color: #fff; font-family: 'Lalezar', 'Cairo', system-ui, sans-serif;
         transition: opacity 0.28s ease, visibility 0.28s;
       }
+      .splash-bg { position: absolute; inset: 0; background: radial-gradient(120% 80% at 50% 38%, #1d4a1b 0%, #0f1a0e 48%, #0a0d0a 100%); }
       .splash-on #splash.out { opacity: 0; visibility: hidden; }
       .splash-on #splash.out .splash-inner { transform: scale(1.06); }
       .splash-on.splash-lock body { overflow: hidden; }
@@ -70,6 +70,7 @@
   </head>
   <body>
     <div id="splash" role="status" aria-label="جاري تحميل متجر البشرى">
+      <div class="splash-bg" aria-hidden="true"></div>
       <div class="splash-glow" aria-hidden="true"></div>
       <div class="splash-inner" aria-hidden="true">
         <svg class="splash-mark" viewBox="0 0 120 74">

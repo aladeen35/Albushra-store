@@ -293,9 +293,151 @@ function cap({ color, side }) {
   );
 }
 
+
+// ---------- Formal shirt (long sleeves) ----------
+function shirt({ color, side }) {
+  const front = side === 'front';
+  const body = 'M160 46 L118 64 Q96 80 90 130 L72 352 L102 358 L122 170 L120 400 Q200 412 280 400 L278 170 L298 358 L328 352 L310 130 Q304 80 282 64 L240 46 Z';
+  const line = shade(color, -0.22);
+  return svg(
+    `<path d="${body}"/>`,
+    `<path d="${body}" fill="${color}"/>
+     <path d="M72 352 L102 358 L100 384 L70 378 Z" fill="${shade(color, -0.06)}" stroke="${line}" stroke-width="2"/>
+     <path d="M328 352 L298 358 L300 384 L330 378 Z" fill="${shade(color, -0.06)}" stroke="${line}" stroke-width="2"/>
+     ${front
+       ? `<path d="M160 46 Q200 60 240 46 L232 40 Q200 50 168 40 Z" fill="${shade(color, -0.12)}"/>
+          <path d="M160 46 L180 92 L200 64 Z" fill="${shade(color, 0.12)}" stroke="${line}" stroke-width="2"/>
+          <path d="M240 46 L220 92 L200 64 Z" fill="${shade(color, 0.12)}" stroke="${line}" stroke-width="2"/>
+          <rect x="192" y="64" width="16" height="340" fill="${shade(color, -0.03)}" stroke="${line}" stroke-width="1.5"/>
+          ${[90, 140, 190, 240, 290, 340, 385].map((y) => `<circle cx="200" cy="${y}" r="4.5" fill="${shade(color, 0.3)}" stroke="${line}"/>`).join('')}
+          <path d="M224 132 L262 132 L262 172 L243 180 L224 172 Z" fill="none" stroke="${line}" stroke-width="2"/>`
+       : `<path d="M160 46 Q200 56 240 46 L240 58 Q200 68 160 58 Z" fill="${shade(color, -0.1)}"/>
+          <path d="M122 104 Q200 116 278 104" fill="none" stroke="${line}" stroke-width="2"/>
+          ${fold('M200 112 L200 200', 0.12)}`}
+     ${fold('M140 190 Q150 280 138 380')}${fold('M262 190 Q252 280 264 380', 0.1)}${fold('M100 170 Q94 260 86 340', 0.16)}${fold('M300 170 Q306 260 314 340', 0.16)}`,
+  );
+}
+
+// ---------- Blazer (suit jacket with shirt and tie) ----------
+function blazer({ color, tie, side }) {
+  const front = side === 'front';
+  const body = 'M158 46 L114 64 Q92 82 86 134 L70 350 L104 358 L122 176 L118 404 Q160 414 200 404 Q240 414 282 404 L278 176 L296 358 L330 350 L314 134 Q308 82 286 64 L242 46 Z';
+  const edge = shade(color, -0.35);
+  return svg(
+    `<path d="${body}"/>`,
+    `<path d="${body}" fill="${color}"/>
+     ${front
+       ? `<path d="M170 46 L200 214 L230 46 Q200 58 170 46 Z" fill="#f6f6f2"/>
+          <path d="M196 58 L204 58 L209 70 L205 190 L200 200 L195 190 L191 70 Z" fill="${tie}"/>
+          <path d="M160 46 L140 74 L156 98 L144 112 L196 236 L176 70 Z" fill="${shade(color, -0.12)}" stroke="${edge}" stroke-width="2"/>
+          <path d="M240 46 L260 74 L244 98 L256 112 L204 236 L224 70 Z" fill="${shade(color, -0.12)}" stroke="${edge}" stroke-width="2"/>
+          <path d="M200 236 L200 404" stroke="${edge}" stroke-width="2.5"/>
+          <circle cx="206" cy="270" r="6" fill="${edge}"/><circle cx="206" cy="320" r="6" fill="${edge}"/>
+          <path d="M130 310 L180 306 L180 318 L130 322 Z" fill="${shade(color, -0.1)}" stroke="${edge}"/>
+          <path d="M270 310 L220 306 L220 318 L270 322 Z" fill="${shade(color, -0.1)}" stroke="${edge}"/>
+          <path d="M226 160 L262 156 L262 164 L226 168 Z" fill="${shade(color, -0.1)}" stroke="${edge}"/>
+          <path d="M232 158 L240 140 L248 150 L256 138 L258 156 Z" fill="#3cc420"/>
+          ${[96, 108, 304, 316].map((x) => `<circle cx="${x}" cy="${x < 200 ? 336 : 336}" r="3" fill="${edge}"/>`).join('')}`
+       : `<path d="M160 46 Q200 58 240 46 L240 60 Q200 72 160 60 Z" fill="${shade(color, -0.15)}"/>
+          <path d="M200 70 L200 404" stroke="${edge}" stroke-width="2" stroke-opacity=".5"/><path d="M200 330 L200 404" stroke="${edge}" stroke-width="3"/>`}
+     ${fold('M136 190 Q146 280 136 390')}${fold('M264 190 Q254 280 266 390', 0.1)}${fold('M96 170 Q90 260 82 340', 0.16)}${fold('M304 170 Q310 260 318 340', 0.16)}`,
+  );
+}
+
+// ---------- Formal trousers ----------
+function trousers({ color, side }) {
+  const body = 'M128 48 L272 48 L286 420 L214 420 L200 156 L186 420 L114 420 Z';
+  const line = shade(color, -0.3);
+  return svg(
+    `<path d="${body}"/>`,
+    `<path d="${body}" fill="${color}"/>
+     <rect x="128" y="48" width="144" height="22" fill="${shade(color, -0.12)}"/>
+     ${[140, 172, 228, 260].map((x) => `<rect x="${x}" y="46" width="6" height="26" fill="${shade(color, -0.2)}"/>`).join('')}
+     ${side === 'front'
+       ? `<path d="M200 70 L200 150" stroke="${line}" stroke-width="2"/><path d="M144 76 Q160 100 150 120" fill="none" stroke="${line}" stroke-width="2"/><path d="M256 76 Q240 100 250 120" fill="none" stroke="${line}" stroke-width="2"/>`
+       : `<path d="M150 92 L182 92" stroke="${line}" stroke-width="3"/><path d="M218 92 L250 92" stroke="${line}" stroke-width="3"/>`}
+     ${hilite('M152 120 L150 418', 0.16)}${hilite('M248 120 L250 418', 0.16)}${fold('M196 160 L190 418', 0.12)}${fold('M204 160 L210 418', 0.12)}`,
+  );
+}
+
+// ---------- Kids dress ----------
+function kidsDress({ color, dots, side }) {
+  const body = 'M168 44 L146 58 L126 108 L150 124 L162 150 L112 392 Q200 414 288 392 L238 150 L250 124 L274 108 L254 58 L232 44 Q200 62 168 44 Z';
+  // Polka dots in staggered rows that widen with the skirt.
+  const dotted = [];
+  for (let row = 0, y = 186; y < 384; row++, y += 30) {
+    const half = 34 + (y - 160) * 0.36;
+    for (let x = 200 - half + (row % 2) * 15; x <= 200 + half; x += 30) dotted.push(`<circle cx="${x.toFixed(1)}" cy="${y}" r="6" fill="${dots}" opacity=".9"/>`);
+  }
+  return svg(
+    `<path d="${body}"/>`,
+    `<path d="${body}" fill="${color}"/><g clip-path="url(#clip)">${dotted.join('')}</g>
+     <path d="M156 150 Q200 162 244 150 L246 166 Q200 178 154 166 Z" fill="${shade(color, -0.25)}"/>
+     ${side === 'front' ? `<path d="M186 160 q-22 -16 -26 2 q4 16 26 4 z M214 160 q22 -16 26 2 q-4 16 -26 4 z" fill="${shade(color, -0.3)}"/><circle cx="200" cy="162" r="6" fill="${shade(color, -0.35)}"/>
+       <path d="M168 44 Q200 70 232 44" fill="none" stroke="#fff" stroke-width="6"/>` : `${[70, 95, 120].map((y) => `<circle cx="200" cy="${y}" r="4" fill="#fff"/>`).join('')}`}
+     ${fold('M170 190 Q150 300 140 390', 0.12)}${fold('M230 190 Q250 300 262 390', 0.12)}${fold('M200 200 L200 400', 0.08)}`,
+  );
+}
+
+// ---------- Shoes (side view; the back image is the other side) ----------
+function shoe(kind, { color, sole = '#f4f4f1', accent = '#3cc420' }, side) {
+  const m = side === 'back' ? ' transform="matrix(-1 0 0 1 400 0)"' : '';
+  const shapes = {
+    sneaker: {
+      upper: 'M46 196 Q34 150 50 116 Q58 102 82 104 Q112 122 150 118 Q156 96 178 94 Q198 98 206 112 L300 148 Q352 160 366 180 Q372 190 370 196 Z',
+      sole: 'M38 194 L372 194 Q378 214 360 228 L66 230 Q38 228 38 194 Z',
+      extra: `<path d="M48 120 Q56 108 80 108 L84 150 Q60 156 50 150 Z" fill="${shade(color, -0.12)}"/>
+        <path d="M86 184 Q200 184 296 150 Q306 146 312 150" fill="none" stroke="${accent}" stroke-width="11" stroke-linecap="round"/>
+        <path d="M300 150 q14 -18 30 -14 q-6 18 -30 14 z" fill="${accent}"/>
+        ${[0, 1, 2, 3, 4].map((i) => `<path d="M${190 + i * 22} ${108 + i * 8} l-10 18" stroke="${sole === '#ffffff' ? '#cfcfcf' : sole}" stroke-width="5" stroke-linecap="round"/>`).join('')}
+        <path d="M300 160 Q340 166 362 184" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="3"/>
+        <path d="M40 206 L372 206" stroke="#000" stroke-opacity=".12" stroke-width="3"/>`,
+    },
+    oxford: {
+      upper: 'M40 196 Q40 162 80 154 L170 140 Q210 112 250 108 L300 110 Q318 116 322 140 L330 166 Q360 176 368 196 Z',
+      sole: 'M36 194 L370 194 Q372 210 360 214 L300 214 L296 226 L250 226 L246 214 L52 214 Q34 210 36 194 Z',
+      extra: `<path d="M120 160 Q140 148 176 144" fill="none" stroke="${shade(color, -0.35)}" stroke-width="3"/>
+        <path d="M176 144 Q214 132 238 120" fill="none" stroke="${shade(color, -0.35)}" stroke-width="3"/>
+        ${[196, 212, 228].map((x, i) => `<path d="M${x} ${136 - i * 5} L${x + 18} ${132 - i * 5}" stroke="#222" stroke-width="4" stroke-linecap="round"/>`).join('')}
+        ${hilite('M70 170 Q120 158 170 150', 0.4)}`,
+    },
+    markoob: {
+      upper: 'M30 196 Q34 182 60 176 Q100 150 160 142 L250 136 Q296 136 312 160 L330 176 L352 182 L360 196 Z',
+      sole: 'M26 194 L364 194 Q366 208 352 212 L46 212 Q24 208 26 194 Z',
+      extra: `<path d="M30 196 Q20 176 44 178" fill="${color}"/>
+        <path d="M90 170 Q180 140 300 160" fill="none" stroke="${accent}" stroke-width="3" stroke-dasharray="6 5"/>
+        <path d="M120 166 Q180 150 250 156" fill="none" stroke="${accent}" stroke-width="3" stroke-dasharray="2 4"/>
+        ${[140, 180, 220].map((x) => `<path d="M${x} 158 l8 -10 l8 10 l-8 10 z" fill="${accent}"/>`).join('')}
+        ${hilite('M70 176 Q140 152 220 146', 0.35)}`,
+    },
+  }[kind];
+  return svg(
+    `<path d="${shapes.upper}"${m}/><path d="${shapes.sole}"${m}/>`,
+    `<g${m}><path d="${shapes.upper}" fill="${color}"/><path d="${shapes.sole}" fill="${sole}"/>${shapes.extra}</g>`,
+  );
+}
+
 const PIECES = {
   'taqiya-white': (s) => taqiya({ color: '#f6f5f0', thread: '#b9ab86', side: s }),
   'cap-green': (s) => cap({ color: '#2f9e35', side: s }),
+  'cap-black': (s) => cap({ color: '#1d1d1f', side: s }),
+  'shirt-white': (s) => shirt({ color: '#f7f7f4', side: s }),
+  'shirt-sky': (s) => shirt({ color: '#bcd8f2', side: s }),
+  'blazer-navy': (s) => blazer({ color: '#1d2a4a', tie: '#7b1f2b', side: s }),
+  'blazer-charcoal': (s) => blazer({ color: '#3a3b3f', tie: '#1f6b2a', side: s }),
+  'trousers-grey': (s) => trousers({ color: '#5d6066', side: s }),
+  'trousers-navy': (s) => trousers({ color: '#232d45', side: s }),
+  'kids-tee-sky': (s) => tshirt({ color: '#8ec9f0', print: 'mark', ink: '#1d2a4a', side: s }),
+  'kids-tee-orange': (s) => tshirt({ color: '#f39a3b', print: 'mark', ink: '#fff', side: s }),
+  'kids-dress-pink': (s) => kidsDress({ color: '#f3a6bf', dots: '#fff', side: s }),
+  'kids-dress-yellow': (s) => kidsDress({ color: '#f6d046', dots: '#fff7d6', side: s }),
+  'kids-jalabiya': (s) => jalabiya({ color: '#dff0fb', embroidery: '#6ba3cf', side: s }),
+  'sneaker-white': (s) => shoe('sneaker', { color: '#f2f2ef', sole: '#ffffff', accent: '#3cc420' }, s),
+  'sneaker-black': (s) => shoe('sneaker', { color: '#232326', sole: '#f2f2ef', accent: '#3cc420' }, s),
+  'oxford-brown': (s) => shoe('oxford', { color: '#6b3a1f', sole: '#2a1a12' }, s),
+  'oxford-black': (s) => shoe('oxford', { color: '#1c1c1e', sole: '#3a2a20' }, s),
+  'markoob-tan': (s) => shoe('markoob', { color: '#c48a4a', sole: '#5a3a1e', accent: '#7a1f1f' }, s),
+  'markoob-red': (s) => shoe('markoob', { color: '#8a2a22', sole: '#3a2216', accent: '#e6c46a' }, s),
   'tee-yellow': (s) => tshirt({ color: '#f6c516', print: 'type', ink: '#111', side: s }),
   'tee-white': (s) => tshirt({ color: '#f4f4f1', print: 'mark', ink: '#111', side: s }),
   'tee-black': (s) => tshirt({ color: '#1d1d1f', print: 'mark', ink: '#f2f2f2', side: s }),

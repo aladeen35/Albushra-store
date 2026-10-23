@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 640">
+<defs>
+<linearGradient id="cyl" x1="0" x2="1">
+<stop offset="0" stop-color="#000" stop-opacity=".30"/>
+<stop offset=".16" stop-color="#000" stop-opacity=".06"/>
+<stop offset=".42" stop-color="#fff" stop-opacity=".10"/>
+<stop offset=".6" stop-color="#fff" stop-opacity=".04"/>
+<stop offset=".86" stop-color="#000" stop-opacity=".08"/>
+<stop offset="1" stop-color="#000" stop-opacity=".34"/>
+</linearGradient>
+<linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#fff" stop-opacity=".12"/>
+<stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+<stop offset="1" stop-color="#000" stop-opacity=".14"/>
+</linearGradient>
+<filter id="noise" x="0" y="0" width="100%" height="100%">
+<feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/>
+<feColorMatrix type="saturate" values="0"/>
+<feComponentTransfer><feFuncA type="linear" slope=".07"/></feComponentTransfer>
+</filter>
+<filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+<clipPath id="clip"><path d="M158 46 L114 64 Q92 82 86 134 L70 350 L104 358 L122 176 L118 404 Q160 414 200 404 Q240 414 282 404 L278 176 L296 358 L330 350 L314 134 Q308 82 286 64 L242 46 Z"/></clipPath>
+</defs>
+<path d="M158 46 L114 64 Q92 82 86 134 L70 350 L104 358 L122 176 L118 404 Q160 414 200 404 Q240 414 282 404 L278 176 L296 358 L330 350 L314 134 Q308 82 286 64 L242 46 Z" fill="#1d2a4a"/>
+<path d="M170 46 L200 214 L230 46 Q200 58 170 46 Z" fill="#f6f6f2"/>
+<path d="M196 58 L204 58 L209 70 L205 190 L200 200 L195 190 L191 70 Z" fill="#7b1f2b"/>
+<path d="M160 46 L140 74 L156 98 L144 112 L196 236 L176 70 Z" fill="#1a2541" stroke="#131b30" stroke-width="2"/>
+<path d="M240 46 L260 74 L244 98 L256 112 L204 236 L224 70 Z" fill="#1a2541" stroke="#131b30" stroke-width="2"/>
+<path d="M200 236 L200 404" stroke="#131b30" stroke-width="2.5"/>
+<circle cx="206" cy="270" r="6" fill="#131b30"/><circle cx="206" cy="320" r="6" fill="#131b30"/>
+<path d="M130 310 L180 306 L180 318 L130 322 Z" fill="#1a2643" stroke="#131b30"/>
+<path d="M270 310 L220 306 L220 318 L270 322 Z" fill="#1a2643" stroke="#131b30"/>
+<path d="M226 160 L262 156 L262 164 L226 168 Z" fill="#1a2643" stroke="#131b30"/>
+<path d="M232 158 L240 140 L248 150 L256 138 L258 156 Z" fill="#3cc420"/>
+<circle cx="96" cy="336" r="3" fill="#131b30"/><circle cx="108" cy="336" r="3" fill="#131b30"/><circle cx="304" cy="336" r="3" fill="#131b30"/><circle cx="316" cy="336" r="3" fill="#131b30"/>
+<path d="M136 190 Q146 280 136 390" fill="none" stroke="#000" stroke-opacity="0.14" stroke-width="7" stroke-linecap="round" filter="url(#soft)"/><path d="M264 190 Q254 280 266 390" fill="none" stroke="#000" stroke-opacity="0.1" stroke-width="7" stroke-linecap="round" filter="url(#soft)"/><path d="M96 170 Q90 260 82 340" fill="none" stroke="#000" stroke-opacity="0.16" stroke-width="7" stroke-linecap="round" filter="url(#soft)"/><path d="M304 170 Q310 260 318 340" fill="none" stroke="#000" stroke-opacity="0.16" stroke-width="7" stroke-linecap="round" filter="url(#soft)"/>
+<g clip-path="url(#clip)">
+<rect width="400" height="640" fill="url(#cyl)"/>
+<rect width="400" height="640" fill="url(#top)"/>
+<rect width="400" height="640" filter="url(#noise)"/>
+</g>
+</svg>

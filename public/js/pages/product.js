@@ -5,9 +5,10 @@ import { garmentLength, garmentMarkup, replay } from '../rack.js';
 import { haptic } from '../favorites.js';
 import { navigate, openCart, toast } from '../ui.js';
 import { favButton } from './catalog.js';
+import { slotFor } from './tryon.js';
 
 const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
-const sizeRank = (s) => (SIZE_ORDER.includes(s) ? SIZE_ORDER.indexOf(s) : 100 + (Number(s) || 0));
+export const sizeRank = (s) => (SIZE_ORDER.includes(s) ? SIZE_ORDER.indexOf(s) : 100 + (Number(s) || 0));
 
 export default async function product(main, { slug }) {
   let cleanup = () => {};
@@ -66,7 +67,7 @@ export default async function product(main, { slug }) {
         </div>
         <div class="pdp-info">
           <div class="pdp-title"><h1>${esc(p.name)}</h1>${favButton(p.slug, p.name)}</div>
-          <div class="try-row"><a class="btn try-btn" href="/tryon?wear=${encodeURIComponent(p.slug)}" data-link data-spark data-magnet="40">${icons.mannequin}<span class="shiny-text">جرّبها على المانيكان</span></a></div>
+          ${slotFor(p.category, p.name) ? `<div class="try-row"><a class="btn try-btn" href="/tryon?wear=${encodeURIComponent(p.slug)}" data-link data-spark data-magnet="40">${icons.mannequin}<span class="shiny-text">جرّبها على المانيكان</span></a></div>` : ''}
           <p class="price" data-price></p>
           <div class="toggle" role="group" aria-label="جهة العرض">
             <button type="button" data-side="front" aria-pressed="true">أمام</button>

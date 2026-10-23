@@ -429,13 +429,22 @@ function productForm(product, cats, onSaved) {
 
 // ---------- Categories ----------
 
+const DISPLAYS = [
+  ['rack', 'رف تعليق'],
+  ['kids', 'رف أطفال'],
+  ['shelf', 'رفوف أحذية'],
+  ['pegboard', 'لوحة قبعات'],
+];
+const displaySelect = (value, attrs) =>
+  `<select ${attrs} aria-label="طريقة العرض في المعرض" style="max-width:150px">${DISPLAYS.map(([v, l]) => `<option value="${v}" ${v === (value || 'rack') ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+
 async function categories(view) {
   const { categories: cats } = await fetch('/api/categories').then((r) => r.json());
   view.innerHTML = `<div class="toolbar"><h1>الأقسام</h1></div>
     <div class="panel stack">
-      ${cats.map((c, i) => `<div class="buy-row" data-id="${c.id}"><input type="text" value="${esc(c.name)}" data-name><input type="text" value="${esc(c.slug)}" data-slug dir="ltr" style="max-width:180px"><button class="btn small" data-save data-order="${i}">حفظ</button><button class="btn small" data-del>حذف</button></div>`).join('')}
-      <form class="buy-row" data-add><input type="text" name="name" placeholder="قسم جديد، مثال: فساتين سهرة" required><input type="text" name="slug" placeholder="dresses" dir="ltr" style="max-width:180px"><button class="btn primary small">إضافة</button></form>
-      <p class="hint" style="color:var(--muted);font-size:.85rem">الاسم اللاتيني يظهر في رابط القسم (مثل /c/dresses).</p>
+      ${cats.map((c, i) => `<div class="buy-row" data-id="${c.id}"><input type="text" value="${esc(c.name)}" data-name><input type="text" value="${esc(c.slug)}" data-slug dir="ltr" style="max-width:180px">${displaySelect(c.display, 'data-display')}<button class="btn small" data-save data-order="${i}">حفظ</button><button class="btn small" data-del>حذف</button></div>`).join('')}
+      <form class="buy-row" data-add><input type="text" name="name" placeholder="قسم جديد، مثال: فساتين سهرة" required><input type="text" name="slug" placeholder="dresses" dir="ltr" style="max-width:180px">${displaySelect('rack', 'name="display"')}<button class="btn primary small">إضافة</button></form>
+      <p class="hint" style="color:var(--muted);font-size:.85rem">الاسم اللاتيني يظهر في رابط القسم (مثل /c/dresses). طريقة العرض تحدد شكل القسم في المعرض ثلاثي الأبعاد: رف تعليق للملابس، رف أطفال منخفض، رفوف للأحذية، أو لوحة للقبعات.</p>
     </div>`;
   const reload = () => categories(view);
   view.onclick = async (e) => {
@@ -443,7 +452,7 @@ async function categories(view) {
     if (!row) return;
     try {
       if (e.target.closest('[data-save]')) {
-        await call(`/categories/${row.dataset.id}`, { method: 'PUT', body: JSON.stringify({ name: row.querySelector('[data-name]').value, slug: row.querySelector('[data-slug]').value, sortOrder: Number(e.target.dataset.order) + 1 }) });
+        await call(`/categories/${row.dataset.id}`, { method: 'PUT', body: JSON.stringify({ name: row.querySelector('[data-name]').value, slug: row.querySelector('[data-slug]').value, sortOrder: Number(e.target.dataset.order) + 1, display: row.querySelector('[data-display]').value }) });
         toast('تم الحفظ');
       }
       if (e.target.closest('[data-del]') && confirm('حذف القسم؟ المنتجات تبقى بدون قسم.')) {
@@ -458,7 +467,7 @@ async function categories(view) {
     e.preventDefault();
     const fd = new FormData(e.target);
     try {
-      await call('/categories', { method: 'POST', body: JSON.stringify({ name: fd.get('name'), slug: fd.get('slug') || undefined, sortOrder: cats.length + 1 }) });
+      await call('/categories', { method: 'POST', body: JSON.stringify({ name: fd.get('name'), slug: fd.get('slug') || undefined, sortOrder: cats.length + 1, display: fd.get('display') }) });
       toast('تمت إضافة القسم');
       reload();
     } catch (err) {

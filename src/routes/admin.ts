@@ -129,14 +129,20 @@ admin.post('/orders/:number/note', async (c) => {
 
 // ---------- Categories ----------
 
-const categorySchema = z.object({ name: z.string().trim().min(1).max(100), slug: z.string().trim().max(100).optional(), sortOrder: z.number().int().optional() });
+const DISPLAYS = ['rack', 'kids', 'shelf', 'pegboard'] as const;
+const categorySchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  slug: z.string().trim().max(100).optional(),
+  sortOrder: z.number().int().optional(),
+  display: z.enum(DISPLAYS).optional(),
+});
 
 admin.post('/categories', async (c) => {
   const parsed = categorySchema.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json(badRequest(parsed.error.issues), 400);
-  const { name, slug, sortOrder } = parsed.data;
-  const row = await c.env.DB.prepare('INSERT INTO categories (name, slug, sort_order) VALUES (?, ?, ?) RETURNING *')
-    .bind(name, slug || slugify(name), sortOrder ?? 0)
+  const { name, slug, sortOrder, display } = parsed.data;
+  const row = await c.env.DB.prepare('INSERT INTO categories (name, slug, sort_order, display) VALUES (?, ?, ?, ?) RETURNING *')
+    .bind(name, slug || slugify(name), sortOrder ?? 0, display ?? 'rack')
     .first();
   return c.json({ category: row }, 201);
 });
@@ -144,9 +150,9 @@ admin.post('/categories', async (c) => {
 admin.put('/categories/:id', async (c) => {
   const parsed = categorySchema.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json(badRequest(parsed.error.issues), 400);
-  const { name, slug, sortOrder } = parsed.data;
-  const row = await c.env.DB.prepare('UPDATE categories SET name = ?, slug = ?, sort_order = ? WHERE id = ? RETURNING *')
-    .bind(name, slug || slugify(name), sortOrder ?? 0, Number(c.req.param('id')))
+  const { name, slug, sortOrder, display } = parsed.data;
+  const row = await c.env.DB.prepare('UPDATE categories SET name = ?, slug = ?, sort_order = ?, display = COALESCE(?, display) WHERE id = ? RETURNING *')
+    .bind(name, slug || slugify(name), sortOrder ?? 0, display ?? null, Number(c.req.param('id')))
     .first();
   return row ? c.json({ category: row }) : c.json({ error: 'not_found' }, 404);
 });

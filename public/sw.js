@@ -2,10 +2,11 @@
 //  - app shell + static files: cache, refreshed in the background (stale-while-revalidate)
 //  - product images: cache first
 //  - API: network first, last good answer when offline (never for orders/admin/payments)
-const VERSION = 'bushra-v2';
+const VERSION = 'bushra-v3';
 const SHELL = [
   '/', '/index.html', '/css/app.css', '/manifest.webmanifest',
-  '/js/app.js', '/js/api.js', '/js/cart.js', '/js/favorites.js', '/js/icons.js', '/js/rack.js', '/js/rack3d.js', '/js/garment3d.js',
+  '/js/app.js', '/js/api.js', '/js/cart.js', '/js/favorites.js', '/js/icons.js', '/js/rack.js', '/js/rack3d.js',
+  '/js/store3d.js', '/js/garment3d.js',
   '/js/garment-image.js', '/js/splash.js', '/js/ui.js', '/js/motion.js', '/js/tryon/mannequin.js', '/js/pages/tryon.js',
   '/js/pages/home.js', '/js/pages/catalog.js', '/js/pages/product.js', '/js/pages/checkout.js', '/js/pages/info.js', '/js/pages/account.js',
   '/vendor/three.min.js', '/vendor/motion.min.js', '/fonts/cairo-arabic.woff2', '/fonts/cairo-latin.woff2', '/fonts/lalezar-arabic.woff2',

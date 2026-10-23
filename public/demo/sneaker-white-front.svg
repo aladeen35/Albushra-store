@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 640">
+<defs>
+<linearGradient id="cyl" x1="0" x2="1">
+<stop offset="0" stop-color="#000" stop-opacity=".30"/>
+<stop offset=".16" stop-color="#000" stop-opacity=".06"/>
+<stop offset=".42" stop-color="#fff" stop-opacity=".10"/>
+<stop offset=".6" stop-color="#fff" stop-opacity=".04"/>
+<stop offset=".86" stop-color="#000" stop-opacity=".08"/>
+<stop offset="1" stop-color="#000" stop-opacity=".34"/>
+</linearGradient>
+<linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#fff" stop-opacity=".12"/>
+<stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+<stop offset="1" stop-color="#000" stop-opacity=".14"/>
+</linearGradient>
+<filter id="noise" x="0" y="0" width="100%" height="100%">
+<feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/>
+<feColorMatrix type="saturate" values="0"/>
+<feComponentTransfer><feFuncA type="linear" slope=".07"/></feComponentTransfer>
+</filter>
+<filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+<clipPath id="clip"><path d="M46 196 Q34 150 50 116 Q58 102 82 104 Q112 122 150 118 Q156 96 178 94 Q198 98 206 112 L300 148 Q352 160 366 180 Q372 190 370 196 Z"/><path d="M38 194 L372 194 Q378 214 360 228 L66 230 Q38 228 38 194 Z"/></clipPath>
+</defs>
+<g><path d="M46 196 Q34 150 50 116 Q58 102 82 104 Q112 122 150 118 Q156 96 178 94 Q198 98 206 112 L300 148 Q352 160 366 180 Q372 190 370 196 Z" fill="#f2f2ef"/><path d="M38 194 L372 194 Q378 214 360 228 L66 230 Q38 228 38 194 Z" fill="#ffffff"/><path d="M48 120 Q56 108 80 108 L84 150 Q60 156 50 150 Z" fill="#d5d5d2"/>
+<path d="M86 184 Q200 184 296 150 Q306 146 312 150" fill="none" stroke="#3cc420" stroke-width="11" stroke-linecap="round"/>
+<path d="M300 150 q14 -18 30 -14 q-6 18 -30 14 z" fill="#3cc420"/>
+<path d="M190 108 l-10 18" stroke="#cfcfcf" stroke-width="5" stroke-linecap="round"/><path d="M212 116 l-10 18" stroke="#cfcfcf" stroke-width="5" stroke-linecap="round"/><path d="M234 124 l-10 18" stroke="#cfcfcf" stroke-width="5" stroke-linecap="round"/><path d="M256 132 l-10 18" stroke="#cfcfcf" stroke-width="5" stroke-linecap="round"/><path d="M278 140 l-10 18" stroke="#cfcfcf" stroke-width="5" stroke-linecap="round"/>
+<path d="M300 160 Q340 166 362 184" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="3"/>
+<path d="M40 206 L372 206" stroke="#000" stroke-opacity=".12" stroke-width="3"/></g>
+<g clip-path="url(#clip)">
+<rect width="400" height="640" fill="url(#cyl)"/>
+<rect width="400" height="640" fill="url(#top)"/>
+<rect width="400" height="640" filter="url(#noise)"/>
+</g>
+</svg>

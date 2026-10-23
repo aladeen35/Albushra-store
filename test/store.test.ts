@@ -88,6 +88,19 @@ describe('catalog', () => {
     expect(intl.products[0].currency).toBe('USD');
     expect(intl.products[0].minPrice).toBe(2000);
   });
+
+  it('tells the store room how each section is displayed', async () => {
+    const before = (await (await call('/api/categories')).json()) as any;
+    const display = Object.fromEntries(before.categories.map((c: any) => [c.slug, c.display]));
+    expect(display).toMatchObject({ tshirts: 'rack', kids: 'kids', shoes: 'shelf', hats: 'pegboard', formal: 'rack' });
+
+    const created = (await (await adminPost('/api/admin/categories', { name: 'حقائب', slug: 'bags', display: 'shelf' })).json()) as any;
+    expect(created.category.display).toBe('shelf');
+    const id = created.category.id;
+    const kept = await call(`/api/admin/categories/${id}`, { method: 'PUT', headers: adminHeaders, body: JSON.stringify({ name: 'حقائب يد', slug: 'bags' }) });
+    expect(((await kept.json()) as any).category.display).toBe('shelf');
+    expect((await adminPost('/api/admin/categories', { name: 'x', display: 'floor' })).status).toBe(400);
+  });
 });
 
 describe('cart lookup', () => {

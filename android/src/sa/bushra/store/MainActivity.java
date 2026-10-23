@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class MainActivity extends Activity {
   static final String REMOTE_URL = "";
-  static final String VERSION = "0.3";
+  static final String VERSION = "0.4";
   static final String HOST = "app.bushra.local";
   static final String HOME = "https://" + HOST + "/";
   static final int SPLASH_BG = Color.parseColor("#0F1A0E");

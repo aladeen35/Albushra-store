@@ -303,10 +303,11 @@ export async function isCutout(url) {
  * options.mannequin: also remove a plain white mannequin (colour-based).
  * options.keep: async (canvas) => Uint8Array mask (1 = keep), e.g. clothes from a human-parsing model,
  *               used to drop a model's face, hair, arms and legs.
+ * options.maxSize: longest side in pixels (smaller for thumbnails, e.g. the 3D store room).
  */
 export async function cutout(url, tolerance, options = {}) {
   const img = await loadImage(url);
-  const scale = Math.min(1, MAX_TEX / Math.max(img.naturalWidth, img.naturalHeight));
+  const scale = Math.min(1, (options.maxSize ?? MAX_TEX) / Math.max(img.naturalWidth, img.naturalHeight));
   const w = Math.round(img.naturalWidth * scale);
   const h = Math.round(img.naturalHeight * scale);
   const c = canvas(w, h);

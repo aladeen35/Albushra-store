@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 640">
+<defs>
+<linearGradient id="cyl" x1="0" x2="1">
+<stop offset="0" stop-color="#000" stop-opacity=".30"/>
+<stop offset=".16" stop-color="#000" stop-opacity=".06"/>
+<stop offset=".42" stop-color="#fff" stop-opacity=".10"/>
+<stop offset=".6" stop-color="#fff" stop-opacity=".04"/>
+<stop offset=".86" stop-color="#000" stop-opacity=".08"/>
+<stop offset="1" stop-color="#000" stop-opacity=".34"/>
+</linearGradient>
+<linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#fff" stop-opacity=".12"/>
+<stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+<stop offset="1" stop-color="#000" stop-opacity=".14"/>
+</linearGradient>
+<filter id="noise" x="0" y="0" width="100%" height="100%">
+<feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/>
+<feColorMatrix type="saturate" values="0"/>
+<feComponentTransfer><feFuncA type="linear" slope=".07"/></feComponentTransfer>
+</filter>
+<filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+<clipPath id="clip"><path d="M30 196 Q34 182 60 176 Q100 150 160 142 L250 136 Q296 136 312 160 L330 176 L352 182 L360 196 Z" transform="matrix(-1 0 0 1 400 0)"/><path d="M26 194 L364 194 Q366 208 352 212 L46 212 Q24 208 26 194 Z" transform="matrix(-1 0 0 1 400 0)"/></clipPath>
+</defs>
+<g transform="matrix(-1 0 0 1 400 0)"><path d="M30 196 Q34 182 60 176 Q100 150 160 142 L250 136 Q296 136 312 160 L330 176 L352 182 L360 196 Z" fill="#8a2a22"/><path d="M26 194 L364 194 Q366 208 352 212 L46 212 Q24 208 26 194 Z" fill="#3a2216"/><path d="M30 196 Q20 176 44 178" fill="#8a2a22"/>
+<path d="M90 170 Q180 140 300 160" fill="none" stroke="#e6c46a" stroke-width="3" stroke-dasharray="6 5"/>
+<path d="M120 166 Q180 150 250 156" fill="none" stroke="#e6c46a" stroke-width="3" stroke-dasharray="2 4"/>
+<path d="M140 158 l8 -10 l8 10 l-8 10 z" fill="#e6c46a"/><path d="M180 158 l8 -10 l8 10 l-8 10 z" fill="#e6c46a"/><path d="M220 158 l8 -10 l8 10 l-8 10 z" fill="#e6c46a"/>
+<path d="M70 176 Q140 152 220 146" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="6" stroke-linecap="round" filter="url(#soft)"/></g>
+<g clip-path="url(#clip)">
+<rect width="400" height="640" fill="url(#cyl)"/>
+<rect width="400" height="640" fill="url(#top)"/>
+<rect width="400" height="640" filter="url(#noise)"/>
+</g>
+</svg>

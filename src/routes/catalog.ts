@@ -36,7 +36,7 @@ catalog.get('/config', async (c) => {
 });
 
 catalog.get('/categories', async (c) => {
-  const { results } = await c.env.DB.prepare('SELECT id, slug, name FROM categories ORDER BY sort_order, name').all();
+  const { results } = await c.env.DB.prepare('SELECT id, slug, name, display FROM categories ORDER BY sort_order, name').all();
   return c.json({ categories: results });
 });
 

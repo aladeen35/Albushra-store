@@ -18,7 +18,10 @@ const OUTFIT_KEY = 'bushra.outfit';
 const SLOTS = ['bottom', 'top', 'outer', 'full', 'hat']; // back-to-front drawing order
 const SLOT_NAMES = { hat: 'الرأس', top: 'علوي', outer: 'جاكيت', bottom: 'بنطلون', full: 'جلابية / عباية' };
 
-export function slotFor(category) {
+/** Where a piece goes on the mannequin; null for pieces it can't wear (shoes, kids' sizes). */
+export function slotFor(category, name = '') {
+  if (category === 'shoes' || category === 'kids') return null;
+  if (category === 'formal') return /بنطلون|بنطال/.test(name) ? 'bottom' : /جاكيت|بليزر|سترة/.test(name) ? 'outer' : 'top';
   if (category === 'hats') return 'hat';
   if (category === 'pants') return 'bottom';
   if (category === 'jalabiyas' || category === 'abayas') return 'full';
@@ -199,7 +202,8 @@ export default async function tryon(main, { query }) {
   };
 
   const wear = async (item, { animate = true } = {}) => {
-    const slot = slotFor(item.category);
+    const slot = slotFor(item.category, item.name);
+    if (!slot) return;
     if (worn[slot]?.item.slug === item.slug) {
       await take(slot, animate);
       renderOutfit();
@@ -351,13 +355,14 @@ export default async function tryon(main, { query }) {
   for (const slot of ['hat', 'top', 'outer', 'bottom', 'full']) {
     for (const p of latest) {
       if (suggestions.length >= 10) break;
-      if (slotFor(p.category) === slot && !favSlugs.includes(p.slug) && suggestions.filter((x) => slotFor(x.category) === slot).length < 2) suggestions.push(p);
+      if (slotFor(p.category, p.name) === slot && !favSlugs.includes(p.slug) && suggestions.filter((x) => slotFor(x.category, x.name) === slot).length < 2) suggestions.push(p);
     }
   }
-  items = [...favProducts.map((p) => toItem(p)), ...suggestions.map((p) => toItem(p, true))];
+  const wearableFavs = favProducts.filter((p) => slotFor(p.category, p.name));
+  items = [...wearableFavs.map((p) => toItem(p)), ...suggestions.map((p) => toItem(p, true))];
   main.querySelector('[data-items]').innerHTML = items
     .map(
-      (it, i) => `<li${i === favProducts.length && favProducts.length ? ' class="rack-divider"' : ''}>
+      (it, i) => `<li${i === wearableFavs.length && wearableFavs.length ? ' class="rack-divider"' : ''}>
         <button type="button" class="tryon-item" data-wear="${esc(it.slug)}" aria-pressed="false" aria-label="جرّب ${esc(it.name)}" data-spark>
           <span class="tryon-hanger">${icons.hanger}<img src="${esc(it.front)}" alt="" loading="lazy"></span>
           <span class="tryon-name">${esc(it.name)}</span>

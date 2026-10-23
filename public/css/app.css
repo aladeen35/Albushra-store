@@ -761,3 +761,91 @@ html.lenis { scroll-behavior: auto; }
 @media (prefers-reduced-motion: reduce) {
   .shiny-text { animation: none; -webkit-text-fill-color: currentColor; background: none; }
 }
+
+/* ---------- 3D store room (home) ---------- */
+.store { display: flex; flex-direction: column; }
+.store-view {
+  position: relative; overflow: hidden; background: #f3f2ee;
+  height: max(420px, calc(100svh - var(--header-h) - 66px));
+}
+.store-canvas { position: absolute; inset: 0; display: block; outline: none; }
+.store-loading {
+  position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px;
+  background: #f3f2ee; color: var(--muted); font-weight: 700; z-index: 3; transition: opacity 0.5s var(--ease), visibility 0.5s;
+}
+.store-loading.gone { opacity: 0; visibility: hidden; }
+.store-hint {
+  position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 2; margin: 0;
+  display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; white-space: nowrap;
+  background: rgba(21, 21, 21, 0.78); color: #fff; font-size: 0.85rem; font-weight: 700; pointer-events: none;
+  backdrop-filter: blur(8px); transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+}
+.store-hint svg { width: 18px; height: 18px; }
+.store-hint.gone { opacity: 0; transform: translate(-50%, 8px); }
+.store-head {
+  position: absolute; top: 14px; inset-inline: 16px; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  pointer-events: none;
+}
+.store-head > * { pointer-events: auto; }
+.store-head h2 { margin: 0; padding: 6px 16px; border-radius: 999px; background: var(--glass); backdrop-filter: blur(10px); font-size: 1.05rem; font-weight: 900; }
+.store-head .btn { background: var(--glass); backdrop-filter: blur(10px); min-height: 40px; padding: 6px 14px; font-size: 0.85rem; }
+.store-head .btn svg { width: 16px; height: 16px; }
+.store-nav { padding: 10px 0; border-bottom: 1px solid var(--line); background: var(--bg); }
+.store-pills { display: flex; gap: 8px; justify-content: center; overflow-x: auto; padding: 0 16px; scrollbar-width: none; }
+.store-pills::-webkit-scrollbar { display: none; }
+.store-pill {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-weight: 700; font-size: 0.9rem; cursor: pointer;
+  transition: background var(--t-ui), color var(--t-ui), border-color var(--t-ui), transform var(--t-tap);
+}
+.store-pill svg { width: 18px; height: 18px; }
+.store-pill:hover { border-color: var(--ink); }
+.store-pill:active { transform: scale(0.97); }
+.store-pill[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+/* Buy card for the picked piece: floating on desktop, bottom sheet on phones. */
+.qv {
+  position: absolute; z-index: 4; left: 24px; top: 24px; width: 360px; max-height: calc(100% - 48px); overflow-y: auto;
+  display: grid; gap: 12px; align-content: start; padding: 20px; border-radius: 22px;
+  background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(16px); box-shadow: 0 24px 60px rgba(20, 20, 20, 0.18);
+  opacity: 0; transform: translateX(-18px) scale(0.98); transition: opacity 0.3s var(--ease), transform 0.35s var(--ease);
+}
+.qv.open { opacity: 1; transform: none; }
+.qv-close { position: absolute; top: 10px; left: 10px; }
+.qv-cat { margin: 0; color: var(--muted); font-size: 0.8rem; font-weight: 700; }
+.qv-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding-left: 40px; }
+.qv-title h2 { margin: 0; font-size: 1.25rem; font-weight: 900; line-height: 1.35; }
+.qv-title .fav-btn { position: static; flex: none; }
+.qv-price { margin: -4px 0 0; font-weight: 900; font-size: 1.1rem; }
+.qv-price span { color: var(--muted); font-weight: 600; font-size: 0.9rem; }
+.qv-colors { display: flex; gap: 8px; flex-wrap: wrap; }
+.qv-colors button { width: 40px; height: 40px; border-radius: 50%; border: 2px solid transparent; background: none; padding: 3px; cursor: pointer; }
+.qv-colors button i { display: block; width: 100%; height: 100%; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); }
+.qv-colors button[aria-pressed='true'] { border-color: var(--ink); }
+.qv .opt-label { margin: 0; }
+.qv-sizes button { min-width: 48px; }
+.qv .notice { margin: 0; }
+.qv-done { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-radius: 12px; background: var(--green-tint); color: var(--green-dark); font-weight: 800; font-size: 0.9rem; }
+.qv-done span { display: inline-flex; align-items: center; gap: 6px; }
+.qv-done svg { width: 18px; height: 18px; }
+.qv-done .text-link { font-size: 0.85rem; color: var(--ink); text-decoration: underline; border: 0; background: none; cursor: pointer; }
+.qv-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.88rem; font-weight: 700; }
+.qv-links a { display: inline-flex; align-items: center; gap: 4px; text-decoration: underline; text-underline-offset: 3px; min-height: 32px; }
+.qv-links svg { width: 16px; height: 16px; }
+
+@media (max-width: 900px) {
+  .store-view { height: max(380px, calc(100svh - var(--header-h) - var(--tabbar-h) - env(safe-area-inset-bottom) - 64px)); }
+  .store-pills { justify-content: flex-start; }
+  .store-pill { min-height: 42px; padding: 0 14px; font-size: 0.85rem; }
+  .store-head { top: 10px; inset-inline: 10px; }
+  .store-head h2 { font-size: 0.95rem; padding: 5px 12px; }
+  .qv {
+    left: 0; right: 0; top: auto; bottom: 0; width: auto; max-height: 52%; border-radius: 22px 22px 0 0; padding: 18px 16px 16px;
+    transform: translateY(100%); box-shadow: 0 -12px 40px rgba(20, 20, 20, 0.16);
+  }
+  .qv.open { transform: none; }
+  .qv-title h2 { font-size: 1.1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qv, .store-hint, .store-loading { transition: none; }
+}

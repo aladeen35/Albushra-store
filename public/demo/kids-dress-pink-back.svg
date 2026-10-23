@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 640">
+<defs>
+<linearGradient id="cyl" x1="0" x2="1">
+<stop offset="0" stop-color="#000" stop-opacity=".30"/>
+<stop offset=".16" stop-color="#000" stop-opacity=".06"/>
+<stop offset=".42" stop-color="#fff" stop-opacity=".10"/>
+<stop offset=".6" stop-color="#fff" stop-opacity=".04"/>
+<stop offset=".86" stop-color="#000" stop-opacity=".08"/>
+<stop offset="1" stop-color="#000" stop-opacity=".34"/>
+</linearGradient>
+<linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#fff" stop-opacity=".12"/>
+<stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+<stop offset="1" stop-color="#000" stop-opacity=".14"/>
+</linearGradient>
+<filter id="noise" x="0" y="0" width="100%" height="100%">
+<feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/>
+<feColorMatrix type="saturate" values="0"/>
+<feComponentTransfer><feFuncA type="linear" slope=".07"/></feComponentTransfer>
+</filter>
+<filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+<clipPath id="clip"><path d="M168 44 L146 58 L126 108 L150 124 L162 150 L112 392 Q200 414 288 392 L238 150 L250 124 L274 108 L254 58 L232 44 Q200 62 168 44 Z"/></clipPath>
+</defs>
+<path d="M168 44 L146 58 L126 108 L150 124 L162 150 L112 392 Q200 414 288 392 L238 150 L250 124 L274 108 L254 58 L232 44 Q200 62 168 44 Z" fill="#f3a6bf"/><g clip-path="url(#clip)"><circle cx="156.6" cy="186" r="6" fill="#fff" opacity=".9"/><circle cx="186.6" cy="186" r="6" fill="#fff" opacity=".9"/><circle cx="216.6" cy="186" r="6" fill="#fff" opacity=".9"/><circle cx="160.8" cy="216" r="6" fill="#fff" opacity=".9"/><circle cx="190.8" cy="216" r="6" fill="#fff" opacity=".9"/><circle cx="220.8" cy="216" r="6" fill="#fff" opacity=".9"/><circle cx="250.8" cy="216" r="6" fill="#fff" opacity=".9"/><circle cx="135.0" cy="246" r="6" fill="#fff" opacity=".9"/><circle cx="165.0" cy="246" r="6" fill="#fff" opacity=".9"/><circle cx="195.0" cy="246" r="6" fill="#fff" opacity=".9"/><circle cx="225.0" cy="246" r="6" fill="#fff" opacity=".9"/><circle cx="255.0" cy="246" r="6" fill="#fff" opacity=".9"/><circle cx="139.2" cy="276" r="6" fill="#fff" opacity=".9"/><circle cx="169.2" cy="276" r="6" fill="#fff" opacity=".9"/><circle cx="199.2" cy="276" r="6" fill="#fff" opacity=".9"/><circle cx="229.2" cy="276" r="6" fill="#fff" opacity=".9"/><circle cx="259.2" cy="276" r="6" fill="#fff" opacity=".9"/><circle cx="113.4" cy="306" r="6" fill="#fff" opacity=".9"/><circle cx="143.4" cy="306" r="6" fill="#fff" opacity=".9"/><circle cx="173.4" cy="306" r="6" fill="#fff" opacity=".9"/><circle cx="203.4" cy="306" r="6" fill="#fff" opacity=".9"/><circle cx="233.4" cy="306" r="6" fill="#fff" opacity=".9"/><circle cx="263.4" cy="306" r="6" fill="#fff" opacity=".9"/><circle cx="117.6" cy="336" r="6" fill="#fff" opacity=".9"/><circle cx="147.6" cy="336" r="6" fill="#fff" opacity=".9"/><circle cx="177.6" cy="336" r="6" fill="#fff" opacity=".9"/><circle cx="207.6" cy="336" r="6" fill="#fff" opacity=".9"/><circle cx="237.6" cy="336" r="6" fill="#fff" opacity=".9"/><circle cx="267.6" cy="336" r="6" fill="#fff" opacity=".9"/><circle cx="91.8" cy="366" r="6" fill="#fff" opacity=".9"/><circle cx="121.8" cy="366" r="6" fill="#fff" opacity=".9"/><circle cx="151.8" cy="366" r="6" fill="#fff" opacity=".9"/><circle cx="181.8" cy="366" r="6" fill="#fff" opacity=".9"/><circle cx="211.8" cy="366" r="6" fill="#fff" opacity=".9"/><circle cx="241.8" cy="366" r="6" fill="#fff" opacity=".9"/><circle cx="271.8" cy="366" r="6" fill="#fff" opacity=".9"/><circle cx="301.8" cy="366" r="6" fill="#fff" opacity=".9"/></g>
+<path d="M156 150 Q200 162 244 150 L246 166 Q200 178 154 166 Z" fill="#b67d8f"/>
+<circle cx="200" cy="70" r="4" fill="#fff"/><circle cx="200" cy="95" r="4" fill="#fff"/><circle cx="200" cy="120" r="4" fill="#fff"/>
+<path d="M170 190 Q150 300 140 390" fill="none" stroke="#000" stroke-opacity="0.12" stroke-width="7" stroke-linecap="round" filter="url(#soft)"/><path d="M230 190 Q250 300 262 390" fill="none" stroke="#000" stroke-opacity="0.12" stroke-width="7" stroke-linecap="round" filter="url(#soft)"/><path d="M200 200 L200 400" fill="none" stroke="#000" stroke-opacity="0.08" stroke-width="7" stroke-linecap="round" filter="url(#soft)"/>
+<g clip-path="url(#clip)">
+<rect width="400" height="640" fill="url(#cyl)"/>
+<rect width="400" height="640" fill="url(#top)"/>
+<rect width="400" height="640" filter="url(#noise)"/>
+</g>
+</svg>
